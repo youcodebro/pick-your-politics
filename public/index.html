@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP: Pick Your Politics</title>
+<meta name="description" content="Know where you really stand. PYP gives you a clear, nuanced picture of your political identity — not a label, not a tribe."/>
+<meta property="og:title" content="PYP: Pick Your Politics"/>
+<meta property="og:description" content="Know your views. Own your voice. Free political questionnaire."/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[data-theme="light"]{--bg:#f5f4f0;--surface:#fff;--surface2:rgba(0,0,0,.03);--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);--text:#0d0d0f;--text2:#4a4a52;--text3:#888790;--nav-bg:rgba(245,244,240,.94);--blue:#185FA5;--blue-bg:#E6F1FB;--blue-dark:#0C447C;--blue-text:#0C447C;--blue-mid:#185FA5;--green:#3B6D11;--green-bg:#EAF3DE;--amber:#BA7517;--amber-bg:#FAEEDA;--red:#A32D2D;--red-bg:#FCEBEB;--purple:#534AB7;--track:rgba(0,0,0,.07);--shadow:0 2px 16px rgba(0,0,0,.07);--shadow-lg:0 8px 48px rgba(0,0,0,.13);--toggle-bg:#e0dfd9;--dim:rgba(0,0,0,.5);--texture-color:#0d0d0f;--texture-op:.025;--capitol-op:.07;--dem:#185FA5;--rep:#A32D2D;--lib:#BA7517;--grn:#3B6D11;--ind:#534AB7}
+[data-theme="dark"]{--bg:#0a0a0f;--surface:rgba(255,255,255,.045);--surface2:rgba(255,255,255,.025);--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.16);--text:#fff;--text2:rgba(255,255,255,.62);--text3:rgba(255,255,255,.35);--nav-bg:rgba(10,10,15,.94);--blue:#378ADD;--blue-bg:rgba(55,138,221,.14);--blue-dark:#0C447C;--blue-text:#85B7EB;--blue-mid:#378ADD;--green:#639922;--green-bg:rgba(59,109,17,.18);--amber:#EF9F27;--amber-bg:rgba(186,117,23,.18);--red:#E24B4A;--red-bg:rgba(163,45,45,.18);--purple:#7F77DD;--track:rgba(255,255,255,.07);--shadow:0 2px 24px rgba(0,0,0,.45);--shadow-lg:0 8px 48px rgba(0,0,0,.6);--toggle-bg:#2a2a35;--dim:rgba(0,0,0,.72);--texture-color:#fff;--texture-op:.028;--capitol-op:.055;--dem:#378ADD;--rep:#E24B4A;--lib:#EF9F27;--grn:#639922;--ind:#7F77DD}
+html{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth}
+body{min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+html,body{transition:background-color .25s,color .15s}
+img,svg,canvas{transition:none!important}
+
+/* BG */
+.bg-texture{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;opacity:var(--texture-op);user-select:none}
+.bg-line{position:absolute;white-space:nowrap;font-size:clamp(22px,4vw,46px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--texture-color);line-height:1.2}
+.bg-capitol{position:fixed;bottom:0;left:50%;transform:translateX(-50%);pointer-events:none;z-index:0;opacity:var(--capitol-op);width:100%;max-width:960px}
+[data-theme="light"] .bg-capitol *{fill:#0d0d0f}
+[data-theme="dark"] .bg-capitol *{fill:#ffffff}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-logo{font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.nav-logo span{color:var(--blue-mid)}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-link{font-size:13px;color:var(--text3);cursor:pointer;transition:color .15s}
+.nav-link:hover{color:var(--text2)}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.theme-toggle{width:40px;height:22px;border-radius:99px;background:var(--toggle-bg);border:1px solid var(--border2);position:relative;cursor:pointer;flex-shrink:0}
+.theme-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--blue-mid);transition:transform .25s}
+[data-theme="dark"] .theme-thumb{transform:translateX(18px)}
+.nav-cta{font-size:13px;font-weight:600;background:var(--blue-mid);color:#fff;padding:.4rem 1rem;border-radius:8px;cursor:pointer;transition:opacity .15s}
+.nav-cta:hover{opacity:.88}
+.nav-mob{display:none;font-size:20px;color:var(--text2)}
+
+/* HERO */
+.wrap{max-width:680px;margin:0 auto;padding:0 1.25rem}
+.wrap-lg{max-width:1040px;margin:0 auto;padding:0 1.5rem}
+.btn-blue{background:var(--blue-mid);color:#fff;padding:.875rem 1.5rem;border-radius:9px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:.5rem;transition:opacity .15s;cursor:pointer;text-decoration:none}
+.btn-blue:hover{opacity:.88}
+.btn-blue.full{width:100%;justify-content:center}
+.btn-ghost{background:transparent;color:var(--text2);padding:.875rem 1.25rem;border-radius:9px;font-size:14px;border:1px solid var(--border2);display:inline-flex;align-items:center;gap:.5rem;transition:all .15s;cursor:pointer;text-decoration:none}
+.btn-ghost:hover{border-color:var(--text3);color:var(--text)}
+.btn-ghost.full{width:100%;justify-content:center}
+
+.hero-section{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - 54px);justify-content:center;padding:5rem 1.5rem 3rem;text-align:center}
+.hero-left{display:flex;flex-direction:column;gap:1.75rem;align-items:center;max-width:760px;width:100%}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--blue-mid);font-weight:700;justify-content:center}
+.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--blue-mid);animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.hero-h1{font-size:clamp(42px,6vw,76px);font-weight:700;line-height:1.05;letter-spacing:-.03em;text-align:center}
+.h1-line1{display:block;color:var(--text)}
+.h1-anim{display:block;position:relative;overflow:hidden;height:1.12em}
+.h1-word{position:absolute;left:0;top:0;color:var(--blue-mid);white-space:nowrap}
+.h1-word.visible{transform:translateY(0);opacity:1}
+.h1-word.entering{animation:wIn .5s cubic-bezier(.16,1,.3,1) forwards}
+.h1-word.leaving{animation:wOut .35s cubic-bezier(.4,0,1,1) forwards}
+@keyframes wIn{from{transform:translateY(65%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes wOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-65%);opacity:0}}
+.hero-tag{font-size:clamp(16px,1.6vw,20px);color:var(--text2);line-height:1.7;max-width:580px;text-align:center}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+.hero-trust{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;justify-content:center}
+.trust-item{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:.35rem}
+.hero-right{display:none}
+.preview-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.375rem;width:100%;max-width:380px;box-shadow:var(--shadow)}
+.preview-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11;animation:blink 1.5s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.stacked-bar{height:12px;border-radius:99px;overflow:hidden;display:flex;background:var(--track);margin-bottom:.875rem}
+.bar-seg{height:100%;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.bar-seg:first-child{border-radius:99px 0 0 99px}
+.bar-seg:last-child{border-radius:0 99px 99px 0}
+.bar-seg.only{border-radius:99px}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;font-size:12px;font-weight:600;padding:3px 10px;white-space:nowrap}
+.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.prev-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1rem}
+.p-div{height:1px;background:var(--border);margin-bottom:1rem}
+.prev-issues{display:flex;flex-direction:column;gap:7px;margin-bottom:1.125rem}
+.piss-row{display:flex;align-items:center;gap:.5rem}
+.piss-name{font-size:12px;color:var(--text2);flex:1}
+.piss-bar{width:72px;height:4px;background:var(--track);border-radius:99px;overflow:hidden;flex-shrink:0}
+.piss-fill{height:100%;border-radius:99px}
+.piss-score{font-size:11px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
+.prev-cta{width:100%;padding:.7rem;background:var(--blue-mid);color:#fff;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:opacity .15s;text-decoration:none}
+.prev-cta:hover{opacity:.88}
+.demo-row{display:flex;gap:5px;justify-content:center;margin-top:.5rem;flex-wrap:wrap}
+.demo-chip{font-size:10px;padding:.2rem .6rem;border-radius:99px;border:1px solid var(--border2);color:var(--text3);background:transparent;cursor:pointer;transition:all .12s}
+.demo-chip.on{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+
+/* STATS */
+.stats-bar{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface2);padding:1.25rem 4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.stat-n{font-size:22px;font-weight:700;color:var(--text)}
+.stat-l{font-size:11px;color:var(--text3);text-align:center}
+.stat-div{width:1px;height:32px;background:var(--border)}
+
+/* SECTIONS */
+.lsec{position:relative;z-index:1;padding:5rem 4rem;max-width:1040px;margin:0 auto}
+.lsec.alt{padding:4rem;background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.lsec.alt .lsec-inner{max-width:1040px;margin:0 auto}
+.sec-ey{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--blue-mid);font-weight:700;margin-bottom:.5rem}
+.sec-title{font-size:clamp(22px,2.8vw,34px);font-weight:700;letter-spacing:-.02em;margin-bottom:.625rem;line-height:1.2;color:var(--text)}
+.sec-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:2.5rem}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;transition:border-color .2s}
+.step-card:hover{border-color:var(--border2)}
+.step-num{font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+.step-icon{width:40px;height:40px;border-radius:9px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--blue-mid);margin-bottom:.875rem}
+.step-title{font-size:15px;font-weight:600;margin-bottom:.375rem;color:var(--text)}
+.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.mods-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:2rem}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s;text-decoration:none;display:block;color:var(--text)}
+.mod-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.mod-icon{width:32px;height:32px;border-radius:8px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--blue-mid);margin-bottom:.625rem}
+.mod-title{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text)}
+.mod-meta{font-size:11px;color:var(--text3);margin-top:.5rem;display:flex;align-items:center;gap:4px}
+.modes-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:2rem}
+.mode-card{border:1px solid var(--border);border-radius:14px;padding:2rem;background:var(--surface);cursor:pointer;transition:all .2s;text-decoration:none;display:block;color:var(--text)}
+.mode-card:hover{border-color:var(--border2)}
+.mode-card.feat{border-color:rgba(24,95,165,.4);background:var(--blue-bg)}
+.mode-badge{font-size:10px;background:var(--blue-bg);color:var(--blue-text);border:1px solid rgba(24,95,165,.2);padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:1rem;font-weight:700}
+.mode-icon{font-size:22px;color:var(--blue-mid);margin-bottom:.875rem}
+.mode-title{font-size:20px;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.mode-desc{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:1.25rem}
+.mode-feats{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.mode-feat{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem}
+.mode-feat i{color:var(--blue-mid);font-size:14px;flex-shrink:0;margin-top:1px}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:2rem;max-width:680px}
+.pc{border:1px solid var(--border);border-radius:14px;padding:2rem;background:var(--surface)}
+.pc.feat{border:2px solid var(--blue-mid);background:var(--blue-bg)}
+.pc-tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.25rem}
+.pc-price{font-size:34px;font-weight:700;line-height:1;color:var(--text);margin-bottom:.25rem}
+.pc-price span{font-size:14px;font-weight:400;color:var(--text3)}
+.pc-yr{font-size:12px;color:var(--text3);margin-bottom:1.25rem}
+.pc-feats{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.pc-feat{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem;line-height:1.45}
+.pc-feat i.y{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
+.pc-feat i.n{color:var(--text3);font-size:14px;flex-shrink:0;margin-top:1px}
+.pc-badge{font-size:10px;background:var(--blue-bg);color:var(--blue-text);border:1px solid rgba(24,95,165,.2);padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:.875rem;font-weight:700}
+
+/* APP DEMO SECTION */
+.demo-section{position:relative;z-index:1;padding:5rem 4rem;background:var(--surface2);border-top:1px solid var(--border)}
+.demo-inner{max-width:1040px;margin:0 auto}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
+.demo-screen-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.375rem;cursor:pointer;transition:all .2s;text-decoration:none;display:block;color:var(--text)}
+.demo-screen-card:hover{border-color:var(--blue-mid);transform:translateY(-2px)}
+.demo-screen-icon{width:44px;height:44px;border-radius:10px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--blue-mid);margin-bottom:.875rem}
+.demo-screen-title{font-size:14px;font-weight:600;margin-bottom:.375rem;color:var(--text)}
+.demo-screen-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.demo-screen-link{font-size:12px;color:var(--blue-mid);font-weight:600;margin-top:.625rem;display:flex;align-items:center;gap:4px}
+
+footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
+.footer-link{font-size:12px;color:var(--text3)}
+.footer-copy{font-size:12px;color:var(--text3)}
+
+@media(max-width:900px){
+  .hero-section{grid-template-columns:1fr;min-height:auto}
+  .hero-left{padding:3rem 1.5rem 1.5rem}
+  .hero-right{padding:0 1.5rem 2rem;justify-content:flex-start}
+  .preview-card{max-width:100%}
+  .stats-bar{padding:1.25rem 1.5rem;justify-content:center}
+  .stat-div{display:none}
+  .lsec{padding:3rem 1.5rem}
+  .lsec.alt{padding:3rem 1.5rem}
+  .steps-grid,.modes-grid,.pricing-grid,.demo-grid{grid-template-columns:1fr}
+  .mods-grid{grid-template-columns:repeat(2,1fr)}
+  footer{padding:1.5rem;flex-direction:column;align-items:flex-start}
+  .nav-links{display:none}
+  .nav-mob{display:block}
+  .demo-section{padding:3rem 1.5rem}
+}
+@media(max-width:480px){
+  .hero-h1{font-size:28px}
+  .hero-actions{flex-direction:column}
+  .btn-blue,.btn-ghost{width:100%;justify-content:center}
+  .mods-grid{grid-template-columns:1fr}
+  .stats-bar{flex-direction:column;align-items:flex-start;gap:.875rem}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg-texture" aria-hidden="true">
+  <div class="bg-line" style="top:4%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+  <div class="bg-line" style="top:14%;left:25%;transform:rotate(-3deg)">One Nation · Indivisible · Your Voice Matters</div>
+  <div class="bg-line" style="top:24%;left:-4%;transform:rotate(-3deg)">Life · Liberty · The Pursuit · We the People</div>
+  <div class="bg-line" style="top:34%;left:18%;transform:rotate(-3deg)">Know Your Views · Own Your Voice · Pick Your Politics</div>
+  <div class="bg-line" style="top:44%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+  <div class="bg-line" style="top:54%;left:30%;transform:rotate(-3deg)">One Nation · Indivisible · Your Voice Matters</div>
+  <div class="bg-line" style="top:64%;left:-4%;transform:rotate(-3deg)">Life · Liberty · The Pursuit</div>
+  <div class="bg-line" style="top:74%;left:10%;transform:rotate(-3deg)">Know Your Views · Own Your Voice · Pick Your Politics</div>
+  <div class="bg-line" style="top:84%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+</div>
+<svg class="bg-capitol" aria-hidden="true" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="450" cy="120" rx="52" ry="58"/><rect x="398" y="118" width="104" height="10" rx="2"/>
+  <rect x="440" y="62" width="20" height="22" rx="3"/><rect x="444" y="48" width="12" height="16" rx="2"/>
+  <polygon points="450,38 444,48 456,48"/><rect x="410" y="128" width="80" height="28" rx="2"/>
+  <rect x="415" y="128" width="5" height="28"/><rect x="427" y="128" width="5" height="28"/><rect x="439" y="128" width="5" height="28"/><rect x="451" y="128" width="5" height="28"/><rect x="463" y="128" width="5" height="28"/><rect x="475" y="128" width="5" height="28"/>
+  <rect x="320" y="156" width="260" height="80" rx="2"/>
+  <rect x="140" y="186" width="180" height="50" rx="2"/><rect x="580" y="186" width="180" height="50" rx="2"/>
+  <rect x="155" y="186" width="4" height="50"/><rect x="170" y="186" width="4" height="50"/><rect x="185" y="186" width="4" height="50"/><rect x="200" y="186" width="4" height="50"/><rect x="215" y="186" width="4" height="50"/><rect x="230" y="186" width="4" height="50"/>
+  <rect x="596" y="186" width="4" height="50"/><rect x="611" y="186" width="4" height="50"/><rect x="626" y="186" width="4" height="50"/><rect x="641" y="186" width="4" height="50"/><rect x="656" y="186" width="4" height="50"/><rect x="671" y="186" width="4" height="50"/>
+  <rect x="338" y="156" width="5" height="80"/><rect x="355" y="156" width="5" height="80"/><rect x="372" y="156" width="5" height="80"/><rect x="389" y="156" width="5" height="80"/>
+  <rect x="506" y="156" width="5" height="80"/><rect x="523" y="156" width="5" height="80"/><rect x="540" y="156" width="5" height="80"/><rect x="557" y="156" width="5" height="80"/>
+  <rect x="280" y="236" width="340" height="8" rx="1"/><rect x="250" y="244" width="400" height="8" rx="1"/>
+  <rect x="130" y="236" width="120" height="8" rx="1"/><rect x="650" y="236" width="120" height="8" rx="1"/>
+  <rect x="0" y="252" width="900" height="48"/>
+</svg>
+
+<nav class="topnav">
+  <span class="nav-logo">PY<span>P</span></span>
+  <div class="nav-links">
+    <span class="nav-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</span>
+    <span class="nav-link" onclick="document.getElementById('modules').scrollIntoView({behavior:'smooth'})">Topics</span>
+    <span class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</span>
+    <span class="nav-link" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Demo screens</span>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"><span class="theme-thumb"></span></button>
+    <a href="questions.html" class="nav-cta">Start free</a>
+    <button class="nav-mob" aria-label="Menu"><i class="ti ti-menu-2"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section">
+  <div class="hero-left">
+    <p class="hero-eyebrow"><span class="eyebrow-dot"></span> US Political Questionnaire</p>
+    <h1 class="hero-h1">
+      <span class="h1-line1" id="h1-line1">Pick Your Politics</span>
+      <span class="h1-anim" id="h1-anim"><span class="h1-word visible" id="h1-word">Know your views.</span></span>
+    </h1>
+    <p class="hero-tag">PYP gives you a clear, nuanced picture of your political identity — not a label, not a tribe. Just your actual views, mapped across the issues that matter.</p>
+    <div class="hero-actions">
+      <a href="questions.html" class="btn-blue"><i class="ti ti-bolt" style="font-size:16px"></i> Start Daily Dose — free</a>
+      <a href="questions.html" class="btn-ghost"><i class="ti ti-books" style="font-size:16px"></i> Full Run</a>
+    </div>
+    <div class="hero-trust">
+      <span class="trust-item"><i class="ti ti-lock"></i> No login to start</span>
+      <span class="trust-item"><i class="ti ti-clock"></i> 3 min/day</span>
+      <span class="trust-item"><i class="ti ti-share"></i> Shareable results</span>
+      <span class="trust-item"><i class="ti ti-device-mobile"></i> Works offline</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><span class="stat-n">64</span><span class="stat-l">Questions across<br>8 modules</span></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><span class="stat-n">5</span><span class="stat-l">Party alignments<br>tracked</span></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><span class="stat-n">11</span><span class="stat-l">Issue categories<br>scored</span></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><span class="stat-n">3 min</span><span class="stat-l">Daily Dose<br>per session</span></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><span class="stat-n">100%</span><span class="stat-l">Neutral, fact-based<br>questions</span></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="lsec" id="how">
+  <p class="sec-ey">How it works</p>
+  <h2 class="sec-title">From question to clarity in three steps</h2>
+  <p class="sec-sub">PYP isn't a personality quiz. It's a structured political self-assessment built to show nuance — not sort you into a box.</p>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">Step 01</div><div class="step-icon"><i class="ti ti-user-circle" aria-hidden="true"></i></div><div class="step-title">Build your avatar</div><div class="step-desc">Choose a base style, skin tone, hair, and presentation. Your avatar evolves as you answer — unlocking details that reflect your political profile.</div></div>
+    <div class="step-card"><div class="step-num">Step 02</div><div class="step-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><div class="step-title">Answer questions</div><div class="step-desc">5 questions a day or a full module. Every question has a neutral explainer. Say "not sure" or skip — no pressure to have an opinion on everything.</div></div>
+    <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><div class="step-title">Get your profile</div><div class="step-desc">See your party mix, issue-by-issue positions, a consistency score, and insights sharp enough to share — and spark a real conversation.</div></div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="lsec alt" id="modules">
+  <div class="lsec-inner">
+    <p class="sec-ey">8 topic modules</p>
+    <h2 class="sec-title">Every issue that matters</h2>
+    <div class="mods-grid">
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="mod-title">Economy &amp; Taxes</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div><div class="mod-title">Privacy &amp; Tech</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-heart-rate-monitor" aria-hidden="true"></i></div><div class="mod-title">Healthcare</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-school" aria-hidden="true"></i></div><div class="mod-title">Education &amp; Family</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-gavel" aria-hidden="true"></i></div><div class="mod-title">Crime &amp; Justice</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-world" aria-hidden="true"></i></div><div class="mod-title">Immigration</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div><div class="mod-title">Climate &amp; Energy</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-globe" aria-hidden="true"></i></div><div class="mod-title">Foreign Policy</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- MODES -->
+<section class="lsec">
+  <p class="sec-ey">Two ways to play</p>
+  <h2 class="sec-title">Your pace, your depth</h2>
+  <div class="modes-grid">
+    <a href="questions.html" class="mode-card feat">
+      <div class="mode-badge">Recommended</div>
+      <div class="mode-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+      <div class="mode-title">Daily Dose</div>
+      <p class="mode-desc">5 questions every day. Build your profile gradually, keep a streak alive, and watch your political picture sharpen over time.</p>
+      <div class="mode-feats">
+        <div class="mode-feat"><i class="ti ti-check"></i> Exactly 5 questions/day</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Daily streak tracking</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> ~3 minutes per session</div>
+      </div>
+      <span class="btn-blue full">Start Daily Dose</span>
+    </a>
+    <a href="questions.html" class="mode-card">
+      <div class="mode-icon"><i class="ti ti-books" aria-hidden="true"></i></div>
+      <div class="mode-title">Full Run</div>
+      <p class="mode-desc">Pick a topic and go deep. Complete a full module in one session for immediate, comprehensive results on that issue area.</p>
+      <div class="mode-feats">
+        <div class="mode-feat"><i class="ti ti-check"></i> 8 questions per module</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Choose your topic order</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> ~8 minutes per module</div>
+      </div>
+      <span class="btn-ghost full">Start Full Run</span>
+    </a>
+  </div>
+</section>
+
+<!-- DEMO SCREENS -->
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+    <p class="sec-ey">Demo screens</p>
+    <h2 class="sec-title">Explore the full app</h2>
+    <p class="sec-sub" style="margin-bottom:2rem">Click through every screen of the PYP experience — questions, results, login gate, upgrade, admin, and more.</p>
+    <div class="demo-grid">
+      <a href="questions.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><div class="demo-screen-title">Question screen</div><div class="demo-screen-desc">Sticky header, step dots, live party widget, flash-advance answers, light/dark mode.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-eye" aria-hidden="true"></i></div><div class="demo-screen-title">Login gate</div><div class="demo-screen-desc">Modal over blurred results teaser. Google OAuth + magic link. Conversion-optimized.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-check" aria-hidden="true"></i></div><div class="demo-screen-title">Module complete</div><div class="demo-screen-desc">Celebration moment with streak, party shift, module progress chips.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><div class="demo-screen-title">Results + insights</div><div class="demo-screen-desc">Party breakdown, issue positions, swipeable insight cards, upgrade strip.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-star" aria-hidden="true"></i></div><div class="demo-screen-title">PYP+ upgrade</div><div class="demo-screen-desc">Pricing page with monthly/yearly toggle, feature comparison, $9/mo · $79/yr.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-trending-up" aria-hidden="true"></i></div><div class="demo-screen-title">PYP+ dashboard</div><div class="demo-screen-desc">Trend charts, consistency ring, retake history, module breakdown (paid tier).</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="share.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-share" aria-hidden="true"></i></div><div class="demo-screen-title">Public share page</div><div class="demo-screen-desc">Partiful-style immersive profile view. Blurred insights. Viral "compare with friend" CTA.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-settings" aria-hidden="true"></i></div><div class="demo-screen-title">Admin panel</div><div class="demo-screen-desc">Modules, questions, scoring editor, drop-off analytics, user management.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="lsec" id="pricing">
+  <p class="sec-ey">Pricing</p>
+  <h2 class="sec-title">Start free. Go deeper with PYP+</h2>
+  <div class="pricing-grid">
+    <div class="pc">
+      <div class="pc-tier">Free</div>
+      <div class="pc-price">$0<span>/forever</span></div>
+      <div class="pc-yr">&nbsp;</div>
+      <div class="pc-feats">
+        <div class="pc-feat"><i class="ti ti-check y"></i>Daily Dose &amp; Full Run</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Party mix + issue breakdown</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Share results publicly</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Avatar builder</div>
+        <div class="pc-feat"><i class="ti ti-minus n"></i>Trend charts over time</div>
+        <div class="pc-feat"><i class="ti ti-minus n"></i>Retake history + comparison</div>
+        <div class="pc-feat"><i class="ti ti-minus n"></i>Consistency score tracking</div>
+      </div>
+      <a href="questions.html" class="btn-ghost full">Start free</a>
+    </div>
+    <div class="pc feat">
+      <div class="pc-badge">PYP+</div>
+      <div class="pc-tier">Premium</div>
+      <div class="pc-price">$9<span>/month</span></div>
+      <div class="pc-yr">or $79/year — save 27%</div>
+      <div class="pc-feats">
+        <div class="pc-feat"><i class="ti ti-check y"></i>Everything in Free</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Trend charts — watch views evolve</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Retake history + compare</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Consistency score over time</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>Advanced modules (coming soon)</div>
+        <div class="pc-feat"><i class="ti ti-check y"></i>High-res share cards</div>
+      </div>
+      <a href="app.html" class="btn-blue full">Upgrade to PYP+</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="nav-logo">PY<span>P</span></span>
+  <div class="footer-links">
+    <span class="footer-link">About</span>
+    <span class="footer-link">Privacy</span>
+    <span class="footer-link">Terms</span>
+    <span class="footer-link">Methodology</span>
+    <span class="footer-link">Contact</span>
+  </div>
+  <span class="footer-copy">© 2025 PYP. Made to inform, not divide.</span>
+</footer>
+
+<script>
+function toggleTheme(){
+  const h=document.documentElement;
+  const nxt=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',nxt);
+  localStorage.setItem('pyp-theme',nxt);
+  renderPreview();
+}
+(()=>{const s=localStorage.getItem('pyp-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+const PC={Democrat:'#185FA5',Republican:'#A32D2D',Libertarian:'#BA7517',Green:'#3B6D11',Independent:'#534AB7'};
+const PILL_L={Democrat:{bg:'#E6F1FB',t:'#0C447C',b:'rgba(24,95,165,.2)'},Republican:{bg:'#FCEBEB',t:'#791F1F',b:'rgba(163,45,45,.2)'},Libertarian:{bg:'#FAEEDA',t:'#633806',b:'rgba(186,117,23,.2)'},Green:{bg:'#EAF3DE',t:'#27500A',b:'rgba(59,109,17,.2)'},Independent:{bg:'#EEEDFE',t:'#3C3489',b:'rgba(83,74,183,.2)'}};
+const PILL_D={Democrat:{bg:'rgba(24,95,165,.18)',t:'#85B7EB',b:'rgba(24,95,165,.3)'},Republican:{bg:'rgba(163,45,45,.18)',t:'#F09595',b:'rgba(226,75,74,.3)'},Libertarian:{bg:'rgba(186,117,23,.18)',t:'#FAC775',b:'rgba(239,159,39,.3)'},Green:{bg:'rgba(59,109,17,.18)',t:'#97C459',b:'rgba(99,153,34,.3)'},Independent:{bg:'rgba(83,74,183,.18)',t:'#AFA9EC',b:'rgba(127,119,221,.3)'}};
+
+const DEMOS={
+  mixed:{parties:{Democrat:38,Republican:24,Libertarian:22,Green:11,Independent:5},issues:[{n:'Economy/Taxes',s:62},{n:'Climate/Energy',s:55},{n:'Immigration',s:-41}]},
+  progressive:{parties:{Democrat:68,Republican:4,Libertarian:8,Green:16,Independent:4},issues:[{n:'Climate/Energy',s:90},{n:'Healthcare',s:78},{n:'Economy/Taxes',s:82}]},
+  conservative:{parties:{Democrat:5,Republican:71,Libertarian:14,Green:2,Independent:8},issues:[{n:'Immigration',s:-82},{n:'Guns',s:-78},{n:'Economy/Taxes',s:-75}]},
+  libertarian:{parties:{Democrat:10,Republican:18,Libertarian:62,Green:4,Independent:6},issues:[{n:'Privacy/Tech',s:70},{n:'Criminal Justice',s:55},{n:'Guns',s:-50}]}
+};
+let demoKey='mixed';
+
+function setDemo(k){
+  demoKey=k;
+  document.querySelectorAll('.demo-chip').forEach(b=>{
+    const labels={mixed:'Mixed',progressive:'Progressive',conservative:'Conservative',libertarian:'Libertarian'};
+    b.classList.toggle('on',b.textContent.trim()===labels[k]);
+  });
+  renderPreview();
+}
+
+function renderPreview(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const PILL=isDark?PILL_D:PILL_L;
+  const d=DEMOS[demoKey];
+  const entries=Object.entries(d.parties).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0)||1;
+  const bar=document.getElementById('prev-bar');
+  if(bar)bar.innerHTML=entries.map(([p,v],i,a)=>`<div class="bar-seg${a.length===1?' only':''}" style="width:${Math.round(v/total*100)}%;background:${PC[p]||'#888'}"></div>`).join('');
+  const pills=document.getElementById('prev-pills');
+  if(pills)pills.innerHTML=entries.slice(0,3).map(([p,v])=>{const ps=PILL[p]||{bg:'#eee',t:'#333',b:'#ccc'};return`<span class="pill" style="background:${ps.bg};color:${ps.t};border:1px solid ${ps.b}"><span class="pill-dot" style="background:${ps.t}"></span>${p} ${Math.round(v)}%</span>`}).join('');
+  const issues=document.getElementById('prev-issues');
+  if(issues)issues.innerHTML=d.issues.map(iss=>{const pos=iss.s>0;const col=isDark?(pos?'#378ADD':'#E24B4A'):(pos?'#185FA5':'#A32D2D');return`<div class="piss-row"><span class="piss-name">${iss.n}</span><div class="piss-bar"><div class="piss-fill" style="width:${Math.min(100,Math.abs(iss.s))}%;background:${col}"></div></div><span class="piss-score" style="color:${col}">${iss.s>0?'+':''}${iss.s}</span></div>`}).join('');
+}
+
+/* H1 rotator */
+const H1_SEQ=[['Pick Your Politics','Know your views.','Own your voice.'],['Pick Your Politics','Find your identity.','Share your truth.'],['Pick Your Politics','Beyond the label.','Into the nuance.']];
+let h1Si=0,h1Wi=0;
+function rotateH1(){
+  const word=document.getElementById('h1-word');const line1=document.getElementById('h1-line1');
+  if(!word||!line1)return;
+  h1Wi=(h1Wi+1)%H1_SEQ[h1Si].length;
+  if(h1Wi===0)h1Si=(h1Si+1)%H1_SEQ.length;
+  const next=H1_SEQ[h1Si][h1Wi];
+  if(h1Wi===0){
+    word.classList.remove('visible');word.classList.add('leaving');
+    setTimeout(()=>{line1.textContent=next;line1.style.opacity='0';line1.style.transform='translateY(60%)';word.style.display='none';word.classList.remove('leaving');requestAnimationFrame(()=>{line1.style.transition='transform .5s cubic-bezier(.16,1,.3,1),opacity .5s cubic-bezier(.16,1,.3,1)';line1.style.transform='translateY(0)';line1.style.opacity='1'})},360);
+  } else {
+    word.style.display='block';line1.style.transition='';word.textContent=next;word.classList.remove('visible','leaving');word.classList.add('entering');
+    setTimeout(()=>{word.classList.remove('entering');word.classList.add('visible')},520);
+  }
+  setTimeout(rotateH1,[2800,2000,2000][h1Wi]||2400);
+}
+
+/* Auto-cycle demo */
+const demoKeys=['mixed','progressive','conservative','libertarian'];
+let demoI=0;
+setInterval(()=>{demoI=(demoI+1)%demoKeys.length;setDemo(demoKeys[demoI])},4000);
+
+renderPreview();
+setTimeout(rotateH1,2800);
+</script>
+</body>
+</html>
+

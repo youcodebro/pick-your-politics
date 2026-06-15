@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP — All Screens</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[data-theme="light"]{
+  --bg:#f5f4f0;--surface:#fff;--surface2:rgba(0,0,0,.03);
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);
+  --text:#0d0d0f;--text2:#4a4a52;--text3:#888790;
+  --nav-bg:rgba(245,244,240,.94);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;--blue-mid:#185FA5;
+  --green:#3B6D11;--green-bg:#EAF3DE;
+  --amber:#BA7517;--amber-bg:#FAEEDA;
+  --red:#A32D2D;--red-bg:#FCEBEB;
+  --purple:#534AB7;--purple-bg:#EEEDFE;
+  --track:rgba(0,0,0,.07);
+  --shadow:0 4px 24px rgba(0,0,0,.09);
+  --shadow-lg:0 8px 48px rgba(0,0,0,.13);
+  --toggle-bg:#e0dfd9;
+  --dim:rgba(0,0,0,.5);
+}
+[data-theme="dark"]{
+  --bg:#0a0a0f;--surface:rgba(255,255,255,.045);--surface2:rgba(255,255,255,.025);
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.16);
+  --text:#fff;--text2:rgba(255,255,255,.62);--text3:rgba(255,255,255,.35);
+  --nav-bg:rgba(10,10,15,.94);
+  --blue:#378ADD;--blue-bg:rgba(55,138,221,.14);--blue-text:#85B7EB;--blue-mid:#378ADD;
+  --green:#639922;--green-bg:rgba(59,109,17,.18);
+  --amber:#EF9F27;--amber-bg:rgba(186,117,23,.18);
+  --red:#E24B4A;--red-bg:rgba(163,45,45,.18);
+  --purple:#7F77DD;--purple-bg:rgba(83,74,183,.18);
+  --track:rgba(255,255,255,.07);
+  --shadow:0 4px 24px rgba(0,0,0,.45);
+  --shadow-lg:0 8px 48px rgba(0,0,0,.6);
+  --toggle-bg:#2a2a35;
+  --dim:rgba(0,0,0,.72);
+}
+html{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth}
+body{min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+a{color:inherit;text-decoration:none}
+input,select,textarea{font-family:inherit}
+html,body,.surface,.nav{transition:background-color .25s,border-color .25s,color .15s}
+img,svg{transition:none}
+
+/* ── NAV ── */
+.topnav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-logo{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.nav-logo span{color:var(--blue)}
+.nav-r{display:flex;align-items:center;gap:.75rem}
+.theme-toggle{width:40px;height:22px;border-radius:99px;background:var(--toggle-bg);border:1px solid var(--border2);position:relative;cursor:pointer;flex-shrink:0;transition:background .25s}
+.theme-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--blue-mid);transition:transform .25s}
+[data-theme="dark"] .theme-thumb{transform:translateX(18px)}
+
+/* ── SCREEN NAV ── */
+.screen-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:.5rem 1.5rem;display:flex;gap:.375rem;flex-wrap:wrap;overflow-x:auto}
+.snav-btn{font-size:12px;padding:.3rem .75rem;border-radius:99px;border:1px solid var(--border2);color:var(--text3);white-space:nowrap;transition:all .12s}
+.snav-btn:hover{border-color:var(--border2);color:var(--text2)}
+.snav-btn.on{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+
+/* ── SHARED ── */
+.page{display:none;min-height:calc(100vh - 104px)}
+.page.active{display:block}
+.wrap{max-width:640px;margin:0 auto;padding:2rem 1.25rem 3rem}
+.wrap-wide{max-width:1000px;margin:0 auto;padding:2rem 1.5rem 3rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.375rem;box-shadow:var(--shadow)}
+.card+.card{margin-top:10px}
+.section-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--blue-mid);font-weight:700;margin-bottom:.375rem}
+.section-title{font-size:22px;font-weight:700;letter-spacing:-.01em;margin-bottom:.375rem;line-height:1.25;color:var(--text)}
+.section-sub{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:1.5rem}
+.btn-primary{background:var(--blue-mid);color:#fff;padding:.75rem 1.5rem;border-radius:9px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:.5rem;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-primary.full{width:100%;justify-content:center}
+.btn-outline{background:transparent;color:var(--text2);padding:.75rem 1.5rem;border-radius:9px;font-size:14px;border:1px solid var(--border2);display:inline-flex;align-items:center;gap:.5rem;transition:all .15s}
+.btn-outline:hover{border-color:var(--text3);color:var(--text)}
+.btn-outline.full{width:100%;justify-content:center}
+.divider{height:1px;background:var(--border);margin:1.125rem 0}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;font-size:12px;font-weight:600;padding:3px 10px;white-space:nowrap}
+.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* party colors */
+.dem-c{color:#185FA5}.rep-c{color:#A32D2D}.lib-c{color:#BA7517}.grn-c{color:#3B6D11}.ind-c{color:#534AB7}
+
+/* stacked bar */
+.stacked-bar{height:12px;border-radius:99px;overflow:hidden;display:flex;background:var(--track)}
+.bar-seg{height:100%;transition:width .55s cubic-bezier(.16,1,.3,1)}
+.bar-seg:first-child{border-radius:99px 0 0 99px}
+.bar-seg:last-child{border-radius:0 99px 99px 0}
+.bar-seg.only{border-radius:99px}
+
+/* ════════════════════════════════════
+   1. LOGIN GATE
+   ════════════════════════════════════ */
+.gate-page{position:relative;min-height:calc(100vh - 104px);display:flex;align-items:center;justify-content:center}
+
+/* blurred results behind the modal */
+.gate-bg{position:absolute;inset:0;padding:2rem 1.25rem;overflow:hidden;pointer-events:none}
+.gate-bg-inner{max-width:580px;margin:0 auto;filter:blur(7px);opacity:.55;user-select:none}
+.gate-bg-title{font-size:20px;font-weight:700;margin-bottom:1rem;color:var(--text)}
+.gate-bg-bar{margin-bottom:.875rem}
+.gate-bg-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1.25rem}
+.gate-bg-issues{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
+.gate-bg-issue{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text2)}
+.gate-bg-badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--blue-bg);color:var(--blue-text)}
+.gate-bg-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gate-bg-stat{background:var(--surface2);border-radius:9px;padding:.75rem;text-align:center}
+.gate-bg-stat-n{font-size:20px;font-weight:700;color:var(--text)}
+.gate-bg-stat-l{font-size:11px;color:var(--text3)}
+
+/* dim overlay */
+.gate-dim{position:absolute;inset:0;background:var(--dim);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+
+/* modal card */
+.gate-modal{position:relative;z-index:10;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2rem 1.75rem;max-width:400px;width:calc(100% - 2.5rem);box-shadow:var(--shadow-lg);animation:modalIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.gate-avatar{width:56px;height:56px;border-radius:50%;border:2.5px solid var(--blue-mid);overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.gate-avatar svg{width:44px;height:44px}
+.gate-h{font-size:20px;font-weight:700;text-align:center;margin-bottom:.375rem;color:var(--text)}
+.gate-sub{font-size:13px;color:var(--text2);text-align:center;line-height:1.6;margin-bottom:1.375rem}
+.gate-teaser-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;text-align:center;margin-bottom:.625rem}
+.gate-preview-bar{margin-bottom:.625rem}
+.gate-preview-pills{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:1.375rem}
+
+.auth-divider{display:flex;align-items:center;gap:.625rem;margin:.875rem 0}
+.auth-divider-line{flex:1;height:1px;background:var(--border)}
+.auth-divider-txt{font-size:11px;color:var(--text3)}
+.auth-google{width:100%;padding:.7rem;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:.625rem;margin-bottom:.5rem;transition:border-color .15s}
+.auth-google:hover{border-color:var(--text3)}
+.google-g{width:18px;height:18px;flex-shrink:0}
+.auth-field{width:100%;padding:.625rem .875rem;border:1px solid var(--border2);border-radius:9px;font-size:13px;background:var(--surface);color:var(--text);outline:none;margin-bottom:.5rem}
+.auth-field:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.gate-skip{text-align:center;margin-top:.75rem}
+.gate-skip button{font-size:12px;color:var(--text3);background:none;border:none}
+.gate-skip button:hover{color:var(--text2)}
+.gate-tos{font-size:11px;color:var(--text3);text-align:center;margin-top:.5rem;line-height:1.5}
+
+/* ════════════════════════════════════
+   2. MODULE COMPLETE
+   ════════════════════════════════════ */
+.complete-page{min-height:calc(100vh - 104px);display:flex;align-items:center;justify-content:center;padding:2rem 1.25rem}
+.complete-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2.5rem 2rem;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow-lg);animation:modalIn .35s cubic-bezier(.16,1,.3,1)}
+.complete-ring{width:72px;height:72px;border-radius:50%;background:var(--green-bg);border:2px solid rgba(59,109,17,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1.125rem;font-size:28px;color:var(--green)}
+.complete-h{font-size:22px;font-weight:700;margin-bottom:.375rem;color:var(--text)}
+.complete-sub{font-size:14px;color:var(--text2);margin-bottom:1.25rem;line-height:1.5}
+.complete-streak{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);color:var(--amber);border-radius:99px;padding:4px 14px;font-size:13px;font-weight:600;margin-bottom:1.5rem;border:1px solid rgba(186,117,23,.25)}
+.complete-shift{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left}
+.complete-shift-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;margin-bottom:.625rem}
+.complete-shift-bar{margin-bottom:.625rem}
+.complete-shift-note{font-size:12px;color:var(--text2)}
+.complete-actions{display:flex;flex-direction:column;gap:8px}
+.complete-btn{width:100%;padding:.75rem;border-radius:9px;font-size:14px;font-weight:600;background:var(--blue-mid);color:#fff;transition:opacity .15s}
+.complete-btn:hover{opacity:.88}
+.complete-btn-outline{width:100%;padding:.75rem;border-radius:9px;font-size:14px;background:transparent;color:var(--text2);border:1px solid var(--border2);transition:all .15s}
+.complete-btn-outline:hover{border-color:var(--text3);color:var(--text)}
+.module-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:1.375rem}
+.mod-chip{font-size:11px;padding:3px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);color:var(--text3)}
+.mod-chip.done{background:var(--green-bg);color:var(--green);border-color:rgba(59,109,17,.25)}
+.mod-chip.active{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(24,95,165,.25);font-weight:600}
+
+/* ════════════════════════════════════
+   3. PYP+ UPGRADE
+   ════════════════════════════════════ */
+.upgrade-hero{text-align:center;padding:3rem 1.25rem 2rem;position:relative;overflow:hidden}
+.upgrade-badge{display:inline-block;font-size:12px;font-weight:700;background:var(--blue-bg);color:var(--blue-text);border:1px solid rgba(24,95,165,.25);border-radius:99px;padding:4px 14px;margin-bottom:1rem;letter-spacing:.04em}
+.upgrade-h{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.02em;margin-bottom:.625rem;line-height:1.15;color:var(--text)}
+.upgrade-tagline{font-size:15px;color:var(--text2);line-height:1.65;max-width:460px;margin:0 auto 1.5rem}
+.pricing-toggle{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px;margin-bottom:2rem}
+.ptog-btn{font-size:12px;font-weight:600;padding:.35rem 1rem;border-radius:99px;color:var(--text3);transition:all .15s}
+.ptog-btn.on{background:var(--blue-mid);color:#fff}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:700px;margin:0 auto 2rem}
+.pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;box-shadow:var(--shadow)}
+.pricing-card.featured{border:2px solid var(--blue-mid);position:relative}
+.pricing-popular{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--blue-mid);color:#fff;font-size:11px;font-weight:700;padding:3px 14px;border-radius:99px;white-space:nowrap}
+.pricing-tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.375rem}
+.pricing-price{font-size:32px;font-weight:700;line-height:1;color:var(--text);margin-bottom:.25rem}
+.pricing-price span{font-size:14px;font-weight:400;color:var(--text3)}
+.pricing-save{font-size:12px;color:var(--green);font-weight:600;margin-bottom:1.125rem;min-height:18px}
+.pricing-feats{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem}
+.pricing-feat{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem;line-height:1.45}
+.pricing-feat i.yes{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
+.pricing-feat i.no{color:var(--text3);font-size:14px;flex-shrink:0;margin-top:1px}
+.pricing-btn{width:100%;padding:.75rem;border-radius:9px;font-size:14px;font-weight:600;transition:opacity .15s}
+.pricing-btn.primary{background:var(--blue-mid);color:#fff}
+.pricing-btn.primary:hover{opacity:.88}
+.pricing-btn.outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.pricing-btn.outline:hover{border-color:var(--text3);color:var(--text)}
+.upgrade-feats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;max-width:700px;margin:0 auto 2rem}
+.upgrade-feat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.125rem}
+.uf-icon{width:36px;height:36px;border-radius:9px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--blue-mid);margin-bottom:.625rem}
+.uf-title{font-size:13px;font-weight:600;margin-bottom:.25rem;color:var(--text)}
+.uf-desc{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* ════════════════════════════════════
+   4. PYP+ DASHBOARD
+   ════════════════════════════════════ */
+.dash-header{padding:2rem 0 1.5rem}
+.dash-welcome{font-size:22px;font-weight:700;margin-bottom:.25rem;color:var(--text)}
+.dash-sub{font-size:13px;color:var(--text2)}
+.dash-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);color:var(--blue-text);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700;margin-left:.5rem;vertical-align:middle}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat-card{background:var(--surface2);border-radius:10px;padding:.875rem}
+.stat-n{font-size:22px;font-weight:700;line-height:1;margin-bottom:3px;color:var(--text)}
+.stat-l{font-size:11px;color:var(--text3)}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;box-shadow:var(--shadow)}
+.dash-card.full{grid-column:1/-1}
+.dash-card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.875rem;display:flex;align-items:center;gap:.5rem}
+.dash-card-title i{font-size:15px;color:var(--blue-mid)}
+/* trend chart */
+.trend-chart{height:120px;position:relative;margin-bottom:.5rem}
+.trend-svg{width:100%;height:100%;overflow:visible}
+/* consistency ring */
+.consist-wrap{display:flex;align-items:center;gap:1.25rem}
+.consist-ring{flex-shrink:0}
+.consist-info{flex:1}
+.consist-score{font-size:32px;font-weight:700;color:var(--green)}
+.consist-label{font-size:12px;color:var(--text2);margin-bottom:.5rem}
+.consist-note{font-size:12px;color:var(--text3);line-height:1.5}
+/* retake history */
+.retake-rows{display:flex;flex-direction:column;gap:.625rem}
+.retake-row{display:flex;align-items:center;gap:.875rem;padding:.625rem .75rem;background:var(--surface2);border-radius:9px}
+.retake-date{font-size:11px;color:var(--text3);width:80px;flex-shrink:0}
+.retake-bar-wrap{flex:1}
+.retake-bar-track{height:6px;background:var(--track);border-radius:99px;overflow:hidden}
+.retake-bar-fill{height:100%;border-radius:99px;background:var(--blue-mid)}
+.retake-top{font-size:11px;font-weight:600;width:72px;text-align:right;flex-shrink:0}
+/* module breakdown */
+.mod-breakdown{display:flex;flex-direction:column;gap:.5rem}
+.mod-brow{display:flex;align-items:center;gap:.75rem}
+.mod-brow-name{font-size:12px;color:var(--text2);width:120px;flex-shrink:0}
+.mod-brow-track{flex:1;height:7px;background:var(--track);border-radius:99px;overflow:hidden}
+.mod-brow-fill{height:100%;border-radius:99px}
+.mod-brow-score{font-size:11px;font-weight:600;width:28px;text-align:right;flex-shrink:0}
+/* locked overlay */
+.locked-overlay{position:absolute;inset:0;background:var(--surface);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.625rem;padding:1.5rem;text-align:center}
+.locked-icon{width:40px;height:40px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--blue-mid)}
+.locked-msg{font-size:13px;color:var(--text2);line-height:1.5}
+.locked-btn{font-size:12px;font-weight:600;background:var(--blue-mid);color:#fff;padding:.4rem 1rem;border-radius:8px}
+
+/* ════════════════════════════════════
+   5. PUBLIC SHARE PAGE
+   ════════════════════════════════════ */
+.share-page{background:var(--bg);min-height:calc(100vh - 104px)}
+.share-hero{padding:2.5rem 1.25rem 2rem;text-align:center;border-bottom:1px solid var(--border)}
+.share-sent-by{font-size:12px;color:var(--text3);margin-bottom:1rem;letter-spacing:.02em}
+.share-sent-by strong{color:var(--text2);font-weight:600}
+.share-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto .875rem;border:2.5px solid var(--blue-mid);overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.share-avatar svg{width:66px;height:66px}
+.share-name{font-size:20px;font-weight:700;margin-bottom:.25rem;color:var(--text)}
+.share-meta{font-size:13px;color:var(--text3)}
+.share-section{padding:1.25rem;border-bottom:1px solid var(--border);max-width:580px;margin:0 auto}
+.share-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);font-weight:600;margin-bottom:.875rem}
+.share-issue-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.625rem}
+.share-issue-name{font-size:13px;color:var(--text2);flex:1}
+.share-issue-badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
+.share-issue-badge.pos{background:var(--green-bg);color:var(--green)}
+.share-issue-badge.neg{background:var(--red-bg);color:var(--red)}
+.share-blurred{position:relative;padding:1.25rem;max-width:580px;margin:0 auto;border-bottom:1px solid var(--border)}
+.share-blur-content{filter:blur(5px);pointer-events:none;user-select:none}
+.share-blur-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.25rem}
+.share-lock-ring{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3)}
+.share-lock-msg{font-size:13px;color:var(--text2);text-align:center;line-height:1.5;max-width:260px}
+.share-cta{padding:2rem 1.25rem 2.5rem;text-align:center;max-width:400px;margin:0 auto}
+.share-cta-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.5rem}
+.share-cta-h{font-size:22px;font-weight:700;margin-bottom:.5rem;line-height:1.3;color:var(--text)}
+.share-cta-h em{font-style:normal;color:var(--blue-mid)}
+.share-cta-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:1.375rem}
+.share-cta-primary{width:100%;padding:.875rem;background:var(--blue-mid);color:#fff;border-radius:10px;font-size:15px;font-weight:600;margin-bottom:.625rem;transition:opacity .15s}
+.share-cta-primary:hover{opacity:.88}
+.share-cta-secondary{width:100%;padding:.75rem;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;font-size:13px;transition:all .15s}
+.share-cta-secondary:hover{border-color:var(--text3);color:var(--text)}
+.share-trust{display:flex;align-items:center;justify-content:center;gap:1.25rem;margin-top:1rem;flex-wrap:wrap}
+.share-trust-item{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+
+/* ════════════════════════════════════
+   6. ADMIN PANEL
+   ════════════════════════════════════ */
+.admin-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 104px)}
+.admin-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 0}
+.admin-sidebar-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:700;padding:0 1.25rem;margin-bottom:.625rem}
+.admin-nav-item{display:flex;align-items:center;gap:.625rem;padding:.625rem 1.25rem;font-size:13px;color:var(--text2);cursor:pointer;transition:all .12s}
+.admin-nav-item:hover{background:var(--surface2);color:var(--text)}
+.admin-nav-item.on{background:var(--blue-bg);color:var(--blue-text);font-weight:600}
+.admin-nav-item i{font-size:15px;flex-shrink:0}
+.admin-nav-divider{height:1px;background:var(--border);margin:.625rem 1.25rem}
+.admin-main{padding:2rem;overflow-y:auto}
+.admin-page-title{font-size:20px;font-weight:700;margin-bottom:.25rem;color:var(--text)}
+.admin-page-sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem}
+/* analytics cards */
+.admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem}
+.admin-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem}
+.admin-stat-n{font-size:24px;font-weight:700;line-height:1;margin-bottom:3px;color:var(--text)}
+.admin-stat-l{font-size:11px;color:var(--text3)}
+.admin-stat-delta{font-size:11px;font-weight:600;margin-top:4px}
+.admin-stat-delta.up{color:var(--green)}
+.admin-stat-delta.dn{color:var(--red)}
+/* table */
+.admin-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.admin-table{width:100%;border-collapse:collapse;font-size:13px}
+.admin-table th{padding:.75rem 1rem;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);background:var(--surface2)}
+.admin-table td{padding:.75rem 1rem;border-bottom:1px solid var(--border);color:var(--text2)}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:var(--surface2)}
+.admin-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.admin-status.pub{background:var(--green-bg);color:var(--green)}
+.admin-status.draft{background:var(--amber-bg);color:var(--amber)}
+.admin-actions{display:flex;align-items:center;gap:.5rem}
+.admin-icon-btn{width:28px;height:28px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);transition:all .12s}
+.admin-icon-btn:hover{border-color:var(--border2);color:var(--text)}
+/* search + filter bar */
+.admin-toolbar{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.admin-search{flex:1;min-width:160px;padding:.5rem .875rem;border:1px solid var(--border2);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);outline:none}
+.admin-search:focus{border-color:var(--blue-mid);box-shadow:0 0 0 2px rgba(24,95,165,.1)}
+.admin-filter-btn{padding:.45rem .875rem;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);background:var(--surface);display:flex;align-items:center;gap:.375rem;transition:all .12s}
+.admin-filter-btn:hover{border-color:var(--text3);color:var(--text)}
+.admin-new-btn{padding:.45rem .875rem;background:var(--blue-mid);color:#fff;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:.375rem;transition:opacity .15s}
+.admin-new-btn:hover{opacity:.88}
+/* drop-off chart */
+.dropoff-bars{display:flex;flex-direction:column;gap:8px;margin-top:.25rem}
+.dropoff-row{display:flex;align-items:center;gap:.75rem}
+.dropoff-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dropoff-track{flex:1;height:10px;background:var(--track);border-radius:99px;overflow:hidden}
+.dropoff-fill{height:100%;border-radius:99px;background:var(--blue-mid);transition:width .6s}
+.dropoff-pct{font-size:11px;color:var(--text3);width:36px;text-align:right}
+/* scoring editor */
+.scoring-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem}
+.scoring-table th{padding:.5rem .75rem;text-align:center;font-size:11px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+.scoring-table td{padding:.5rem .75rem;border-bottom:1px solid var(--border);text-align:center}
+.scoring-table tr:last-child td{border-bottom:none}
+.score-val{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:600;font-size:11px}
+.score-val.pos{background:var(--green-bg);color:var(--green)}
+.score-val.neg{background:var(--red-bg);color:var(--red)}
+.score-val.zero{background:var(--surface2);color:var(--text3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .pricing-grid,.upgrade-feats-grid,.dash-grid,.admin-stat-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .admin-layout{grid-template-columns:1fr}
+  .admin-sidebar{display:none}
+  .dash-card.full{grid-column:1}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .gate-modal{padding:1.5rem 1.25rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <span class="nav-logo">PY<span>P</span></span>
+  <div class="nav-r">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-thumb"></span>
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN NAV -->
+<div class="screen-nav">
+  <a href="index.html" style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:4px;padding:.3rem .75rem;text-decoration:none;flex-shrink:0"><i class="ti ti-arrow-left" style="font-size:13px"></i> Home</a>
+  <button class="snav-btn on" onclick="show('login-gate')">1. Login gate</button>
+  <button class="snav-btn" onclick="show('module-complete')">2. Module complete</button>
+  <button class="snav-btn" onclick="show('upgrade')">3. PYP+ upgrade</button>
+  <button class="snav-btn" onclick="show('dashboard')">4. PYP+ dashboard</button>
+  <button class="snav-btn" onclick="show('public-share')">5. Public share page</button>
+  <button class="snav-btn" onclick="show('admin')">6. Admin panel</button>
+</div>
+
+<!-- ══════════════════════════════════
+     1. LOGIN GATE
+     ══════════════════════════════════ -->
+<div id="page-login-gate" class="page active">
+  <div class="gate-page">
+    <!-- blurred results behind -->
+    <div class="gate-bg">
+      <div class="gate-bg-inner">
+        <div class="gate-bg-title">Your political profile</div>
+        <div class="gate-bg-bar">
+          <div class="stacked-bar">
+            <div class="bar-seg" style="width:38%;background:#185FA5"></div>
+            <div class="bar-seg" style="width:24%;background:#A32D2D"></div>
+            <div class="bar-seg" style="width:22%;background:#BA7517"></div>
+            <div class="bar-seg" style="width:11%;background:#3B6D11"></div>
+            <div class="bar-seg" style="width:5%;background:#534AB7"></div>
+          </div>
+        </div>
+        <div class="gate-bg-pills">
+          <span class="pill" style="background:#E6F1FB;color:#0C447C;border:1px solid rgba(24,95,165,.2)"><span class="pill-dot" style="background:#185FA5"></span>Democrat 38%</span>
+          <span class="pill" style="background:#FCEBEB;color:#791F1F;border:1px solid rgba(163,45,45,.2)"><span class="pill-dot" style="background:#A32D2D"></span>Republican 24%</span>
+          <span class="pill" style="background:#FAEEDA;color:#633806;border:1px solid rgba(186,117,23,.2)"><span class="pill-dot" style="background:#BA7517"></span>Libertarian 22%</span>
+        </div>
+        <div class="gate-bg-issues">
+          <div class="gate-bg-issue"><span>Economy/Taxes</span><span class="gate-bg-badge">Progressive +62</span></div>
+          <div class="gate-bg-issue"><span>Climate/Energy</span><span class="gate-bg-badge">Progressive +55</span></div>
+          <div class="gate-bg-issue"><span>Immigration</span><span class="gate-bg-badge" style="background:var(--red-bg);color:var(--red)">Conservative −41</span></div>
+        </div>
+        <div class="gate-bg-stats">
+          <div class="gate-bg-stat"><div class="gate-bg-stat-n">84%</div><div class="gate-bg-stat-l">Consistency</div></div>
+          <div class="gate-bg-stat"><div class="gate-bg-stat-n">6</div><div class="gate-bg-stat-l">Strong positions</div></div>
+          <div class="gate-bg-stat"><div class="gate-bg-stat-n">3</div><div class="gate-bg-stat-l">Parties above 10%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dim -->
+    <div class="gate-dim"></div>
+
+    <!-- modal -->
+    <div class="gate-modal">
+      <div class="gate-avatar">
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" fill="#C68642"/>
+          <ellipse cx="40" cy="18" rx="22" ry="14" fill="#5C4033"/>
+          <circle cx="33" cy="38" r="3" fill="#7a4f2a"/>
+          <circle cx="47" cy="38" r="3" fill="#7a4f2a"/>
+          <path d="M33 50 Q40 56 47 50" stroke="#7a4f2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M18 72 Q18 62 40 62 Q62 62 62 72" fill="#185FA5"/>
+        </svg>
+      </div>
+      <h2 class="gate-h">Your profile is forming</h2>
+      <p class="gate-sub">Sign in to reveal your full breakdown — party mix, issue positions, insights, and your final avatar.</p>
+
+      <p class="gate-teaser-label">A glimpse of your results</p>
+      <div class="gate-preview-bar">
+        <div class="stacked-bar">
+          <div class="bar-seg" style="width:38%;background:#185FA5"></div>
+          <div class="bar-seg" style="width:24%;background:#A32D2D"></div>
+          <div class="bar-seg" style="width:22%;background:#BA7517"></div>
+          <div class="bar-seg" style="width:11%;background:#3B6D11"></div>
+          <div class="bar-seg" style="width:5%;background:#534AB7"></div>
+        </div>
+      </div>
+      <div class="gate-preview-pills">
+        <span class="pill" style="background:#E6F1FB;color:#0C447C;border:1px solid rgba(24,95,165,.2)"><span class="pill-dot" style="background:#185FA5"></span>Democrat 38%</span>
+        <span class="pill" style="background:#FCEBEB;color:#791F1F;border:1px solid rgba(163,45,45,.2)"><span class="pill-dot" style="background:#A32D2D"></span>Republican 24%</span>
+        <span class="pill" style="background:#FAEEDA;color:#633806;border:1px solid rgba(186,117,23,.2)"><span class="pill-dot" style="background:#BA7517"></span>Libertarian 22%</span>
+      </div>
+
+      <button class="auth-google">
+        <svg class="google-g" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider">
+        <div class="auth-divider-line"></div>
+        <span class="auth-divider-txt">or</span>
+        <div class="auth-divider-line"></div>
+      </div>
+
+      <input class="auth-field" type="email" placeholder="you@example.com"/>
+      <button class="btn-primary full" style="margin-bottom:.25rem">Send magic link</button>
+
+      <div class="gate-skip"><button onclick="show('dashboard')">Skip for now — view results anyway</button></div>
+      <p class="gate-tos">By continuing you agree to our Terms and Privacy Policy.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     2. MODULE COMPLETE
+     ══════════════════════════════════ -->
+<div id="page-module-complete" class="page">
+  <div class="complete-page">
+    <div class="complete-card">
+      <div class="complete-ring"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <h2 class="complete-h">Economy &amp; Taxes — done</h2>
+      <p class="complete-sub">8 questions answered · Your profile just got sharper</p>
+      <div class="complete-streak"><i class="ti ti-flame" aria-hidden="true"></i> 4-day streak</div>
+
+      <div class="complete-shift">
+        <div class="complete-shift-label">How your party mix shifted</div>
+        <div class="complete-shift-bar">
+          <div class="stacked-bar">
+            <div class="bar-seg" style="width:38%;background:#185FA5"></div>
+            <div class="bar-seg" style="width:24%;background:#A32D2D"></div>
+            <div class="bar-seg" style="width:22%;background:#BA7517"></div>
+            <div class="bar-seg" style="width:11%;background:#3B6D11"></div>
+            <div class="bar-seg" style="width:5%;background:#534AB7"></div>
+          </div>
+        </div>
+        <div class="complete-shift-note">Democrat moved +6 · Libertarian moved −3 after this module</div>
+      </div>
+
+      <div class="module-chips">
+        <span class="mod-chip done">Economy</span>
+        <span class="mod-chip active">Healthcare</span>
+        <span class="mod-chip">Immigration</span>
+        <span class="mod-chip">Climate</span>
+        <span class="mod-chip">Education</span>
+        <span class="mod-chip">Crime</span>
+        <span class="mod-chip">Privacy</span>
+        <span class="mod-chip">Foreign Policy</span>
+      </div>
+
+      <div class="complete-actions">
+        <button class="complete-btn" onclick="show('upgrade')"><i class="ti ti-arrow-right" style="font-size:13px"></i> Continue to upgrade →</button>
+        <button class="complete-btn-outline" onclick="show('dashboard')">View my dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     3. PYP+ UPGRADE
+     ══════════════════════════════════ -->
+<div id="page-upgrade" class="page">
+  <div class="upgrade-hero">
+    <div class="upgrade-badge">PYP+</div>
+    <h1 class="upgrade-h">Go beyond the basics.<br>Track how your views evolve.</h1>
+    <p class="upgrade-tagline">PYP+ unlocks trend charts, retake history, a consistency score over time, and advanced share cards — everything you need to understand your politics deeply.</p>
+
+    <div class="pricing-toggle">
+      <button class="ptog-btn on" id="ptog-mo" onclick="setPricing('monthly')">Monthly</button>
+      <button class="ptog-btn" id="ptog-yr" onclick="setPricing('yearly')">Yearly <span style="font-size:10px;background:var(--green-bg);color:var(--green);border-radius:99px;padding:1px 6px;margin-left:3px;font-weight:700">−27%</span></button>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Free</div>
+        <div class="pricing-price">$0<span>/forever</span></div>
+        <div class="pricing-save">&nbsp;</div>
+        <div class="pricing-feats">
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Daily Dose (5 questions/day)</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Full Run — all 8 modules</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Party mix + issue breakdown</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Share results publicly</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>DiceBear avatar builder</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i>Trend charts over time</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i>Retake history + comparison</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i>Consistency score tracking</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i>Advanced share cards</div>
+        </div>
+        <button class="pricing-btn outline">Current plan</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-popular">Most popular</div>
+        <div class="pricing-tier">PYP+</div>
+        <div class="pricing-price" id="price-display">$9<span>/month</span></div>
+        <div class="pricing-save" id="price-save">&nbsp;</div>
+        <div class="pricing-feats">
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Everything in Free</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Trend charts — watch views evolve</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Retake history + side-by-side compare</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Consistency score over time</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Advanced modules (coming soon)</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>High-res share cards + OG images</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i>Priority access to new features</div>
+        </div>
+        <button class="pricing-btn primary" onclick="show('dashboard')">Upgrade to PYP+ →</button>
+      </div>
+    </div>
+
+    <div class="upgrade-feats-grid">
+      <div class="upgrade-feat-card"><div class="uf-icon"><i class="ti ti-trending-up" aria-hidden="true"></i></div><div class="uf-title">Trend charts</div><div class="uf-desc">See how your party mix and issue positions shift over time as you answer more questions.</div></div>
+      <div class="upgrade-feat-card"><div class="uf-icon"><i class="ti ti-history" aria-hidden="true"></i></div><div class="uf-title">Retake history</div><div class="uf-desc">Compare your results across multiple sessions. Did your views change? Now you'll know.</div></div>
+      <div class="upgrade-feat-card"><div class="uf-icon"><i class="ti ti-target" aria-hidden="true"></i></div><div class="uf-title">Consistency score</div><div class="uf-desc">Track how consistent your answers are over time. A higher score means sharper views.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     4. PYP+ DASHBOARD
+     ══════════════════════════════════ -->
+<div id="page-dashboard" class="page">
+  <div class="wrap-wide">
+    <div class="dash-header">
+      <div class="dash-welcome">Welcome back, Jordan <span class="dash-badge"><i class="ti ti-star" style="font-size:11px"></i> PYP+</span></div>
+      <div class="dash-sub">Last session: 2 days ago · 4-day streak active</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-n">47</div><div class="stat-l">Questions answered</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:var(--green)">86%</div><div class="stat-l">Consistency score</div></div>
+      <div class="stat-card"><div class="stat-n">4</div><div class="stat-l">Day streak</div></div>
+      <div class="stat-card"><div class="stat-n">6/8</div><div class="stat-l">Modules done</div></div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- trend chart -->
+      <div class="dash-card full">
+        <div class="dash-card-title"><i class="ti ti-trending-up" aria-hidden="true"></i> Party mix over time</div>
+        <div class="trend-chart">
+          <svg class="trend-svg" viewBox="0 0 560 110" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#185FA5" stop-opacity=".18"/>
+                <stop offset="100%" stop-color="#185FA5" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- grid lines -->
+            <line x1="0" y1="27" x2="560" y2="27" stroke="var(--border)" stroke-width="1"/>
+            <line x1="0" y1="55" x2="560" y2="55" stroke="var(--border)" stroke-width="1"/>
+            <line x1="0" y1="82" x2="560" y2="82" stroke="var(--border)" stroke-width="1"/>
+            <!-- Democrat trend -->
+            <polyline points="0,72 80,68 160,60 240,52 320,48 400,42 480,38 560,35" fill="none" stroke="#185FA5" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Republican trend -->
+            <polyline points="0,45 80,48 160,52 240,55 320,58 400,60 480,62 560,65" fill="none" stroke="#A32D2D" stroke-width="2" stroke-linejoin="round" stroke-dasharray="4 3"/>
+            <!-- Libertarian trend -->
+            <polyline points="0,58 80,55 160,54 240,52 320,50 400,48 480,46 560,44" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="2 3"/>
+            <!-- dots at end -->
+            <circle cx="560" cy="35" r="4" fill="#185FA5"/>
+            <circle cx="560" cy="65" r="4" fill="#A32D2D"/>
+            <circle cx="560" cy="44" r="3" fill="#BA7517"/>
+            <!-- x labels -->
+            <text x="0" y="105" font-size="9" fill="var(--text3)" font-family="system-ui">Session 1</text>
+            <text x="240" y="105" font-size="9" fill="var(--text3)" font-family="system-ui" text-anchor="middle">Session 4</text>
+            <text x="560" y="105" font-size="9" fill="var(--text3)" font-family="system-ui" text-anchor="end">Session 8</text>
+            <!-- legend -->
+            <circle cx="8" cy="8" r="4" fill="#185FA5"/>
+            <text x="16" y="12" font-size="10" fill="var(--text2)" font-family="system-ui">Democrat</text>
+            <circle cx="90" cy="8" r="4" fill="#A32D2D"/>
+            <text x="98" y="12" font-size="10" fill="var(--text2)" font-family="system-ui">Republican</text>
+            <circle cx="180" cy="8" r="4" fill="#BA7517"/>
+            <text x="188" y="12" font-size="10" fill="var(--text2)" font-family="system-ui">Libertarian</text>
+          </svg>
+        </div>
+        <div style="font-size:12px;color:var(--text3)">Democrat trending up +8% over 8 sessions · Republican trending down −6%</div>
+      </div>
+
+      <!-- consistency ring -->
+      <div class="dash-card">
+        <div class="dash-card-title"><i class="ti ti-target" aria-hidden="true"></i> Consistency score</div>
+        <div class="consist-wrap">
+          <div class="consist-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--track)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--green)" stroke-width="8"
+                stroke-dasharray="173" stroke-dashoffset="24" stroke-linecap="round"
+                transform="rotate(-90 40 40)"/>
+              <text x="40" y="45" text-anchor="middle" font-size="16" font-weight="700" fill="var(--green)" font-family="system-ui">86%</text>
+            </svg>
+          </div>
+          <div class="consist-info">
+            <div class="consist-score">86%</div>
+            <div class="consist-label">Highly consistent</div>
+            <div class="consist-note">Your views are well-formed. Skipped 3 questions, said "not sure" 4 times across 47 answers.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- retake history -->
+      <div class="dash-card">
+        <div class="dash-card-title"><i class="ti ti-history" aria-hidden="true"></i> Retake history</div>
+        <div class="retake-rows">
+          <div class="retake-row"><span class="retake-date">Jun 9, 2025</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:73%"></div></div></div><span class="retake-top dem-c">Dem 38%</span></div>
+          <div class="retake-row"><span class="retake-date">May 22, 2025</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:65%"></div></div></div><span class="retake-top dem-c">Dem 32%</span></div>
+          <div class="retake-row"><span class="retake-date">Apr 14, 2025</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:58%"></div></div></div><span class="retake-top lib-c">Lib 34%</span></div>
+          <div class="retake-row"><span class="retake-date">Mar 3, 2025</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:50%"></div></div></div><span class="retake-top lib-c">Lib 36%</span></div>
+        </div>
+      </div>
+
+      <!-- module breakdown -->
+      <div class="dash-card full">
+        <div class="dash-card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Module breakdown</div>
+        <div class="mod-breakdown">
+          <div class="mod-brow"><span class="mod-brow-name">Economy/Taxes</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:62%;background:#185FA5"></div></div><span class="mod-brow-score" style="color:#185FA5">+62</span></div>
+          <div class="mod-brow"><span class="mod-brow-name">Climate/Energy</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:55%;background:#185FA5"></div></div><span class="mod-brow-score" style="color:#185FA5">+55</span></div>
+          <div class="mod-brow"><span class="mod-brow-name">Healthcare</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:48%;background:#185FA5"></div></div><span class="mod-brow-score" style="color:#185FA5">+48</span></div>
+          <div class="mod-brow"><span class="mod-brow-name">Immigration</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:41%;background:#A32D2D"></div></div><span class="mod-brow-score" style="color:#A32D2D">−41</span></div>
+          <div class="mod-brow"><span class="mod-brow-name">Foreign Policy</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:28%;background:#A32D2D"></div></div><span class="mod-brow-score" style="color:#A32D2D">−28</span></div>
+          <div class="mod-brow"><span class="mod-brow-name">Education</span><div class="mod-brow-track"><div class="mod-brow-fill" style="width:35%;background:#185FA5"></div></div><span class="mod-brow-score" style="color:#185FA5">+35</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     5. PUBLIC SHARE PAGE
+     ══════════════════════════════════ -->
+<div id="page-public-share" class="page">
+  <div class="share-page">
+    <div class="share-hero">
+      <p class="share-sent-by">Your friend <strong>Jordan</strong> shared their political profile</p>
+      <div class="share-avatar">
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" fill="#C68642"/>
+          <ellipse cx="40" cy="18" rx="22" ry="14" fill="#5C4033"/>
+          <circle cx="33" cy="38" r="3" fill="#7a4f2a"/>
+          <circle cx="47" cy="38" r="3" fill="#7a4f2a"/>
+          <path d="M33 50 Q40 56 47 50" stroke="#7a4f2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M18 72 Q18 62 40 62 Q62 62 62 72" fill="#185FA5"/>
+        </svg>
+      </div>
+      <div class="share-name">Jordan</div>
+      <div class="share-meta">32 questions answered · 4 modules complete</div>
+    </div>
+
+    <div class="share-section">
+      <p class="share-section-label">Party mix</p>
+      <div class="stacked-bar" style="margin-bottom:.875rem">
+        <div class="bar-seg" style="width:38%;background:#185FA5"></div>
+        <div class="bar-seg" style="width:24%;background:#A32D2D"></div>
+        <div class="bar-seg" style="width:22%;background:#BA7517"></div>
+        <div class="bar-seg" style="width:11%;background:#3B6D11"></div>
+        <div class="bar-seg" style="width:5%;background:#534AB7"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="pill" style="background:#E6F1FB;color:#0C447C;border:1px solid rgba(24,95,165,.2)"><span class="pill-dot" style="background:#185FA5"></span>Democrat 38%</span>
+        <span class="pill" style="background:#FCEBEB;color:#791F1F;border:1px solid rgba(163,45,45,.2)"><span class="pill-dot" style="background:#A32D2D"></span>Republican 24%</span>
+        <span class="pill" style="background:#FAEEDA;color:#633806;border:1px solid rgba(186,117,23,.2)"><span class="pill-dot" style="background:#BA7517"></span>Libertarian 22%</span>
+        <span class="pill" style="background:#EAF3DE;color:#27500A;border:1px solid rgba(59,109,17,.2)"><span class="pill-dot" style="background:#3B6D11"></span>Green 11%</span>
+      </div>
+    </div>
+
+    <div class="share-section">
+      <p class="share-section-label">Top 3 issue positions</p>
+      <div class="share-issue-row"><span class="share-issue-name">Economy/Taxes</span><span class="share-issue-badge pos">Progressive +62</span></div>
+      <div class="share-issue-row"><span class="share-issue-name">Climate/Energy</span><span class="share-issue-badge pos">Progressive +55</span></div>
+      <div class="share-issue-row"><span class="share-issue-name">Immigration</span><span class="share-issue-badge neg">Conservative −41</span></div>
+    </div>
+
+    <div class="share-blurred">
+      <p class="share-section-label">Insights</p>
+      <div class="share-blur-content">
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text2)">
+          <div style="display:flex;justify-content:space-between"><span>Consistency score</span><span style="font-weight:600">84%</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Strong positions</span><span style="font-weight:600">6 issues</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Cross-party views</span><span style="font-weight:600">3 parties above 10%</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Overall lean</span><span style="font-weight:600">Slightly progressive</span></div>
+        </div>
+      </div>
+      <div class="share-blur-overlay">
+        <div class="share-lock-ring"><i class="ti ti-lock" aria-hidden="true"></i></div>
+        <p class="share-lock-msg">Take PYP to unlock the full breakdown — and see how your views compare.</p>
+      </div>
+    </div>
+
+    <div class="share-cta">
+      <p class="share-cta-eyebrow">Your turn</p>
+      <h2 class="share-cta-h">See how your views<br>compare to <em>Jordan</em></h2>
+      <p class="share-cta-sub">Answer the same questions. Get your own party mix, issue positions, and insights. Free to play — takes about 3 minutes.</p>
+      <button class="share-cta-primary" onclick="window.location.href='questions.html'">Take PYP — it's free</button>
+      <button class="share-cta-secondary" onclick="show('login-gate')">View Jordan's full profile</button>
+      <div class="share-trust">
+        <span class="share-trust-item"><i class="ti ti-lock" style="font-size:12px"></i> No login to start</span>
+        <span class="share-trust-item"><i class="ti ti-clock" style="font-size:12px"></i> 3 min daily dose</span>
+        <span class="share-trust-item"><i class="ti ti-share" style="font-size:12px"></i> Share your results</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     6. ADMIN PANEL
+     ══════════════════════════════════ -->
+<div id="page-admin" class="page">
+  <div class="admin-layout">
+    <!-- sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-title">Admin</div>
+      <div class="admin-nav-item on" onclick="showAdmin('analytics')"><i class="ti ti-chart-bar"></i> Analytics</div>
+      <div class="admin-nav-item" onclick="showAdmin('modules')"><i class="ti ti-books"></i> Modules</div>
+      <div class="admin-nav-item" onclick="showAdmin('questions')"><i class="ti ti-list-check"></i> Questions</div>
+      <div class="admin-nav-item" onclick="showAdmin('scoring')"><i class="ti ti-adjustments"></i> Scoring</div>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item" onclick="showAdmin('users')"><i class="ti ti-users"></i> Users</div>
+      <div class="admin-nav-item" onclick="showAdmin('settings')"><i class="ti ti-settings"></i> Settings</div>
+    </div>
+
+    <!-- main content -->
+    <div class="admin-main">
+
+      <!-- ANALYTICS -->
+      <div id="admin-analytics">
+        <div class="admin-page-title">Analytics</div>
+        <div class="admin-page-sub">Last 30 days · All modules</div>
+        <div class="admin-stat-grid">
+          <div class="admin-stat"><div class="admin-stat-n">12,840</div><div class="admin-stat-l">Sessions started</div><div class="admin-stat-delta up">+18% vs last month</div></div>
+          <div class="admin-stat"><div class="admin-stat-n">68%</div><div class="admin-stat-l">Module completion</div><div class="admin-stat-delta up">+4%</div></div>
+          <div class="admin-stat"><div class="admin-stat-n">24%</div><div class="admin-stat-l">Gate conversion</div><div class="admin-stat-delta up">+2%</div></div>
+          <div class="admin-stat"><div class="admin-stat-n">8.3%</div><div class="admin-stat-l">Share rate</div><div class="admin-stat-delta dn">−1%</div></div>
+        </div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="dash-card-title" style="margin-bottom:.875rem"><i class="ti ti-chart-line" style="font-size:15px;color:var(--blue-mid)"></i> Drop-off by question</div>
+          <div class="dropoff-bars">
+            <div class="dropoff-row"><span class="dropoff-label">Q1 — Taxes</span><div class="dropoff-track"><div class="dropoff-fill" style="width:98%"></div></div><span class="dropoff-pct">98%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q2 — Min wage</span><div class="dropoff-track"><div class="dropoff-fill" style="width:94%"></div></div><span class="dropoff-pct">94%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q3 — Regulation</span><div class="dropoff-track"><div class="dropoff-fill" style="width:91%"></div></div><span class="dropoff-pct">91%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q4 — UBI</span><div class="dropoff-track"><div class="dropoff-fill" style="width:87%"></div></div><span class="dropoff-pct">87%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q5 — Unions</span><div class="dropoff-track"><div class="dropoff-fill" style="width:82%"></div></div><span class="dropoff-pct">82%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q6 — Cap gains</span><div class="dropoff-track"><div class="dropoff-fill" style="width:79%"></div></div><span class="dropoff-pct">79%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q7 — Trade</span><div class="dropoff-track"><div class="dropoff-fill" style="width:76%"></div></div><span class="dropoff-pct">76%</span></div>
+            <div class="dropoff-row"><span class="dropoff-label">Q8 — Wealth gap</span><div class="dropoff-track"><div class="dropoff-fill" style="width:72%"></div></div><span class="dropoff-pct">72%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULES -->
+      <div id="admin-modules" style="display:none">
+        <div class="admin-page-title">Modules</div>
+        <div class="admin-page-sub">Manage and publish topic modules</div>
+        <div class="admin-toolbar">
+          <input class="admin-search" type="text" placeholder="Search modules..."/>
+          <button class="admin-filter-btn"><i class="ti ti-filter" style="font-size:13px"></i> Filter</button>
+          <button class="admin-new-btn"><i class="ti ti-plus" style="font-size:13px"></i> New module</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Title</th><th>Questions</th><th>Completion</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>Economy &amp; Taxes</td><td>8</td><td>72%</td><td><span class="admin-status pub">Published</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-eye"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>Privacy &amp; Tech</td><td>8</td><td>68%</td><td><span class="admin-status pub">Published</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-eye"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>Healthcare</td><td>8</td><td>71%</td><td><span class="admin-status pub">Published</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-eye"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>Education &amp; Family</td><td>8</td><td>65%</td><td><span class="admin-status pub">Published</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-eye"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>Advanced: Media &amp; Misinformation</td><td>0</td><td>—</td><td><span class="admin-status draft">Draft</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-eye"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- QUESTIONS -->
+      <div id="admin-questions" style="display:none">
+        <div class="admin-page-title">Questions</div>
+        <div class="admin-page-sub">Economy &amp; Taxes — 8 questions</div>
+        <div class="admin-toolbar">
+          <input class="admin-search" type="text" placeholder="Search questions..."/>
+          <button class="admin-filter-btn"><i class="ti ti-filter" style="font-size:13px"></i> Module</button>
+          <button class="admin-new-btn"><i class="ti ti-plus" style="font-size:13px"></i> New question</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>#</th><th>Prompt</th><th>Type</th><th>Skip rate</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Wealthy individuals should pay significantly higher taxes.</td><td>Likert</td><td>2%</td><td><span class="admin-status pub">Live</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>2</td><td>Federal minimum wage should be raised to $15/hour.</td><td>Likert</td><td>3%</td><td><span class="admin-status pub">Live</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>3</td><td>Government regulation of business does more harm than good.</td><td>Likert</td><td>4%</td><td><span class="admin-status pub">Live</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>4</td><td>Government should provide universal basic income.</td><td>Likert</td><td>6%</td><td><span class="admin-status pub">Live</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+              <tr><td>5</td><td>New: Should capital gains be taxed higher? (draft)</td><td>Binary</td><td>—</td><td><span class="admin-status draft">Draft</span></td><td class="admin-actions"><button class="admin-icon-btn"><i class="ti ti-edit"></i></button><button class="admin-icon-btn"><i class="ti ti-trash"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SCORING -->
+      <div id="admin-scoring" style="display:none">
+        <div class="admin-page-title">Scoring editor</div>
+        <div class="admin-page-sub">Q1 — Wealthy individuals should pay significantly higher taxes.</div>
+        <div class="card">
+          <table class="scoring-table">
+            <thead><tr><th>Answer</th><th>Democrat</th><th>Republican</th><th>Libertarian</th><th>Green</th><th>Economy/Taxes</th></tr></thead>
+            <tbody>
+              <tr><td style="text-align:left;font-weight:500">Strongly Disagree</td><td><span class="score-val neg">−15</span></td><td><span class="score-val pos">+15</span></td><td><span class="score-val pos">+15</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val neg">−20</span></td></tr>
+              <tr><td style="text-align:left;font-weight:500">Disagree</td><td><span class="score-val neg">−8</span></td><td><span class="score-val pos">+8</span></td><td><span class="score-val pos">+8</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val neg">−10</span></td></tr>
+              <tr><td style="text-align:left;font-weight:500">Neutral</td><td><span class="score-val zero">0</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val zero">0</span></td></tr>
+              <tr><td style="text-align:left;font-weight:500">Agree</td><td><span class="score-val pos">+8</span></td><td><span class="score-val neg">−8</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val pos">+5</span></td><td><span class="score-val pos">+10</span></td></tr>
+              <tr><td style="text-align:left;font-weight:500">Strongly Agree</td><td><span class="score-val pos">+15</span></td><td><span class="score-val neg">−15</span></td><td><span class="score-val zero">0</span></td><td><span class="score-val pos">+10</span></td><td><span class="score-val pos">+20</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:.75rem;margin-top:1rem">
+          <button class="btn-primary">Save scoring</button>
+          <button class="btn-outline">Reset to default</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="admin-users" style="display:none">
+        <div class="admin-page-title">Users</div>
+        <div class="admin-page-sub">1,284 registered users · 312 PYP+ subscribers</div>
+        <div class="admin-toolbar">
+          <input class="admin-search" type="text" placeholder="Search by email..."/>
+          <button class="admin-filter-btn"><i class="ti ti-filter" style="font-size:13px"></i> Plan</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Email</th><th>Plan</th><th>Questions</th><th>Streak</th><th>Joined</th></tr></thead>
+            <tbody>
+              <tr><td>jordan@example.com</td><td><span class="admin-status pub">PYP+</span></td><td>47</td><td>4 days</td><td>Mar 2025</td></tr>
+              <tr><td>alex@example.com</td><td><span class="admin-status pub">PYP+</span></td><td>62</td><td>12 days</td><td>Jan 2025</td></tr>
+              <tr><td>sam@example.com</td><td><span class="admin-status draft">Free</span></td><td>18</td><td>1 day</td><td>Jun 2025</td></tr>
+              <tr><td>riley@example.com</td><td><span class="admin-status draft">Free</span></td><td>8</td><td>—</td><td>Jun 2025</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="admin-settings" style="display:none">
+        <div class="admin-page-title">Settings</div>
+        <div class="admin-page-sub">App configuration and feature flags</div>
+        <div class="card">
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+              <div><div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--text)">Daily Dose mode</div><div style="font-size:12px;color:var(--text3)">Enable 5-question daily sessions</div></div>
+              <div style="width:36px;height:20px;border-radius:99px;background:var(--blue-mid);position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+              <div><div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--text)">Login gate</div><div style="font-size:12px;color:var(--text3)">Require login to reveal results</div></div>
+              <div style="width:36px;height:20px;border-radius:99px;background:var(--blue-mid);position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--text)">PYP+ subscriptions</div><div style="font-size:12px;color:var(--text3)">Enable Stripe billing and paid tier</div></div>
+              <div style="width:36px;height:20px;border-radius:99px;background:var(--blue-mid);position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+  const h=document.documentElement;
+  const nxt=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',nxt);
+  localStorage.setItem('pyp-theme',nxt);
+}
+(()=>{const s=localStorage.getItem('pyp-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+/* ── SCREEN NAV ── */
+const PAGES={
+  'login-gate':'page-login-gate',
+  'module-complete':'page-module-complete',
+  'upgrade':'page-upgrade',
+  'dashboard':'page-dashboard',
+  'public-share':'page-public-share',
+  'admin':'page-admin'
+};
+function show(key){
+  Object.values(PAGES).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const target=document.getElementById(PAGES[key]);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.snav-btn').forEach((b,i)=>{
+    b.classList.toggle('on',b.getAttribute('onclick')===`show('${key}')`);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ── PRICING TOGGLE ── */
+function setPricing(mode){
+  document.getElementById('ptog-mo').classList.toggle('on',mode==='monthly');
+  document.getElementById('ptog-yr').classList.toggle('on',mode==='yearly');
+  const priceEl=document.getElementById('price-display');
+  const saveEl=document.getElementById('price-save');
+  if(mode==='yearly'){
+    priceEl.innerHTML='$6.58<span>/month</span>';
+    saveEl.textContent='Billed $79/year — save $29';
+    saveEl.style.color='var(--green)';
+  } else {
+    priceEl.innerHTML='$9<span>/month</span>';
+    saveEl.innerHTML='&nbsp;';
+  }
+}
+
+/* ── ADMIN SUB-NAV ── */
+const ADMIN_PAGES=['analytics','modules','questions','scoring','users','settings'];
+function showAdmin(key){
+  ADMIN_PAGES.forEach(k=>{
+    const el=document.getElementById('admin-'+k);
+    if(el) el.style.display=k===key?'block':'none';
+  });
+  document.querySelectorAll('.admin-nav-item').forEach(item=>{
+    item.classList.toggle('on',item.getAttribute('onclick')===`showAdmin('${key}')`);
+  });
+}
+</script>
+</body>
+</html>
+HTMLEOF

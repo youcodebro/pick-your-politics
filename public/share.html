@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP — Jordan's Political Profile</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;color:#fff;background:#0d0d0f;min-height:100vh}
+.top-bar{padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{font-size:16px;font-weight:600;color:#fff}.logo span{color:#378ADD}
+.top-badge{font-size:11px;background:rgba(55,138,221,.12);color:#85B7EB;padding:3px 10px;border-radius:99px;border:1px solid rgba(55,138,221,.25)}
+.profile-switcher{display:flex;gap:6px;padding:.875rem 1.25rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.06);align-items:center}
+.ps-label{font-size:11px;color:rgba(255,255,255,.3)}
+.ps-chip{font-size:11px;padding:.25rem .7rem;border-radius:99px;border:1px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;color:rgba(255,255,255,.45);font-family:inherit;transition:all .12s}
+.ps-chip:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.7)}
+.ps-chip.on{background:#185FA5;border-color:#185FA5;color:#fff}
+.hero{padding:2rem 1.25rem 1.5rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.06)}
+.sent-by{font-size:12px;color:rgba(255,255,255,.38);margin-bottom:1rem;letter-spacing:.01em}
+.sent-by strong{color:rgba(255,255,255,.7);font-weight:500}
+.avatar-ring{width:96px;height:96px;border-radius:50%;margin:0 auto .875rem;border:2px solid rgba(55,138,221,.45);overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center}
+.avatar-ring img{width:82px;height:82px;object-fit:contain}
+.user-name{font-size:22px;font-weight:600;margin-bottom:.25rem}
+.user-sub{font-size:13px;color:rgba(255,255,255,.38)}
+.section{padding:1.25rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.3);font-weight:500;margin-bottom:.875rem}
+.stacked-bar{height:16px;border-radius:99px;overflow:hidden;display:flex;background:rgba(255,255,255,.06);margin-bottom:.875rem}
+.bar-seg{height:100%}
+.bar-seg:first-child{border-radius:99px 0 0 99px}
+.bar-seg:last-child{border-radius:0 99px 99px 0}
+.bar-seg.only{border-radius:99px}
+.pills-row{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;font-size:12px;font-weight:500;padding:4px 11px;white-space:nowrap}
+.pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.issues-list{display:flex;flex-direction:column;gap:10px}
+.issue-row{display:flex;align-items:center;gap:.75rem}
+.issue-name{font-size:13px;color:rgba(255,255,255,.7);flex:1}
+.issue-badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.issue-badge.pos{background:rgba(59,109,17,.3);color:#97C459;border:1px solid rgba(97,153,34,.35)}
+.issue-badge.neg{background:rgba(163,45,45,.3);color:#F09595;border:1px solid rgba(226,75,74,.35)}
+.issue-badge.neu{background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1)}
+.issue-track{width:72px;height:4px;background:rgba(255,255,255,.08);border-radius:99px;position:relative;overflow:hidden;flex-shrink:0}
+.issue-fill{position:absolute;top:0;bottom:0;border-radius:99px}
+.blur-section{padding:1.25rem;border-bottom:1px solid rgba(255,255,255,.06);position:relative}
+.blur-content{filter:blur(5px);pointer-events:none;user-select:none}
+.blur-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.25rem;z-index:2}
+.blur-lock{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}
+.blur-msg{font-size:13px;color:rgba(255,255,255,.55);text-align:center;line-height:1.5;max-width:260px}
+.insight-row{display:flex;align-items:center;justify-content:space-between;padding:.375rem 0}
+.insight-lbl{font-size:12px;color:rgba(255,255,255,.35)}
+.insight-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.6)}
+.cta-block{padding:2rem 1.25rem 2.5rem}
+.cta-eyebrow{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.08em}
+.cta-title{font-size:22px;font-weight:600;text-align:center;line-height:1.3;margin-bottom:.5rem}
+.cta-title em{font-style:normal;color:#378ADD}
+.cta-sub{font-size:13px;color:rgba(255,255,255,.38);text-align:center;line-height:1.6;margin-bottom:1.5rem;max-width:320px;margin-left:auto;margin-right:auto}
+.cta-primary{width:100%;padding:.9rem;background:#185FA5;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;margin-bottom:.625rem}
+.cta-primary:hover{background:#0C447C}
+.cta-secondary{width:100%;padding:.75rem;background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.cta-secondary:hover{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.6)}
+.trust-row{display:flex;align-items:center;justify-content:center;gap:1.25rem;margin-top:1.125rem;flex-wrap:wrap}
+.trust-item{font-size:11px;color:rgba(255,255,255,.22);display:flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+<a href="index.html" style="position:fixed;top:12px;left:12px;z-index:100;font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:4px;text-decoration:none;padding:.35rem .75rem;background:rgba(0,0,0,.25);border-radius:99px;backdrop-filter:blur(8px)"><i class="ti ti-arrow-left" style="font-size:13px"></i> Home</a>
+
+<div class="top-bar">
+  <span class="logo">PY<span>P</span></span>
+  <span class="top-badge">Pick Your Politics</span>
+</div>
+
+<div class="profile-switcher">
+  <span class="ps-label">Preview:</span>
+  <button class="ps-chip on" onclick="load('mixed')" id="ps-mixed">Jordan (mixed)</button>
+  <button class="ps-chip" onclick="load('progressive')" id="ps-progressive">Alex (progressive)</button>
+  <button class="ps-chip" onclick="load('conservative')" id="ps-conservative">Sam (conservative)</button>
+  <button class="ps-chip" onclick="load('libertarian')" id="ps-libertarian">Riley (libertarian)</button>
+</div>
+
+<div class="hero">
+  <p class="sent-by">Your friend <strong id="hero-name">Jordan</strong> shared their political profile</p>
+  <div class="avatar-ring">
+    <img id="hero-avatar" src="" alt="Profile avatar" onerror="this.style.display='none'"/>
+  </div>
+  <h1 class="user-name" id="hero-display-name">Jordan</h1>
+  <p class="user-sub" id="hero-sub">Answered 32 questions · 4 modules</p>
+</div>
+
+<div class="section">
+  <p class="section-label">Party mix</p>
+  <div class="stacked-bar" id="share-bar"></div>
+  <div class="pills-row" id="share-pills"></div>
+</div>
+
+<div class="section">
+  <p class="section-label">Top 3 issue positions</p>
+  <div class="issues-list" id="share-issues"></div>
+</div>
+
+<div class="blur-section">
+  <p class="section-label">Insights</p>
+  <div class="blur-content" id="blur-content"></div>
+  <div class="blur-overlay">
+    <div class="blur-lock"><i class="ti ti-lock" style="font-size:16px;color:rgba(255,255,255,.55)"></i></div>
+    <p class="blur-msg">Take PYP to unlock the full breakdown — and see how your views compare.</p>
+  </div>
+</div>
+
+<div class="cta-block">
+  <p class="cta-eyebrow">Your turn</p>
+  <h2 class="cta-title">See how your views<br>compare to <em id="cta-name">Jordan</em></h2>
+  <p class="cta-sub">Answer the same questions. Get your own party mix, issue positions, and insights. Free to play — takes about 3 minutes.</p>
+  <button class="cta-primary" onclick="window.location.href='questions.html'">Take PYP — it's free</button>
+  <button class="cta-secondary" id="cta-secondary" onclick="window.location.href='index.html'">View Jordan's full profile</button>
+  <div class="trust-row">
+    <span class="trust-item"><i class="ti ti-lock" style="font-size:12px"></i> No login to start</span>
+    <span class="trust-item"><i class="ti ti-clock" style="font-size:12px"></i> 3 min daily dose</span>
+    <span class="trust-item"><i class="ti ti-share" style="font-size:12px"></i> Share your results</span>
+  </div>
+</div>
+
+<script>
+const BASE='https://api.dicebear.com/9.x/avataaars/svg';
+const PC={Democrat:{c:'#185FA5',bg:'rgba(24,95,165,.2)',t:'#85B7EB',b:'rgba(24,95,165,.35)'},Republican:{c:'#A32D2D',bg:'rgba(163,45,45,.2)',t:'#F09595',b:'rgba(226,75,74,.35)'},Libertarian:{c:'#BA7517',bg:'rgba(186,117,23,.2)',t:'#FAC775',b:'rgba(239,159,39,.35)'},Green:{c:'#3B6D11',bg:'rgba(59,109,17,.2)',t:'#97C459',b:'rgba(99,153,34,.35)'},Independent:{c:'#534AB7',bg:'rgba(83,74,183,.2)',t:'#AFA9EC',b:'rgba(127,119,221,.35)'}};
+const PROFILES={
+  mixed:{name:'Jordan',seed:'Jordan',skin:'d08b5b',hair:'724133',q:32,mods:4,parties:{Democrat:38,Republican:24,Libertarian:22,Green:11,Independent:5},issues:[{cat:'Economy/Taxes',score:62},{cat:'Climate/Energy',score:55},{cat:'Immigration',score:-41}],insights:[{l:'Consistency score',v:'84%'},{l:'Strong positions',v:'6 issues'},{l:'Cross-party views',v:'3 parties above 10%'},{l:'Overall lean',v:'Slightly progressive'}]},
+  progressive:{name:'Alex',seed:'Alex',skin:'f8d25c',hair:'2c1b18',q:40,mods:5,parties:{Democrat:68,Republican:4,Libertarian:8,Green:16,Independent:4},issues:[{cat:'Climate/Energy',score:90},{cat:'Healthcare',score:78},{cat:'Economy/Taxes',score:82}],insights:[{l:'Consistency score',v:'91%'},{l:'Strong positions',v:'9 issues'},{l:'Cross-party views',v:'2 parties above 10%'},{l:'Overall lean',v:'Strongly progressive'}]},
+  conservative:{name:'Sam',seed:'Casey',skin:'ae5d29',hair:'b58143',q:36,mods:5,parties:{Democrat:5,Republican:71,Libertarian:14,Green:2,Independent:8},issues:[{cat:'Immigration',score:-82},{cat:'Guns',score:-78},{cat:'Economy/Taxes',score:-75}],insights:[{l:'Consistency score',v:'88%'},{l:'Strong positions',v:'8 issues'},{l:'Cross-party views',v:'1 party above 10%'},{l:'Overall lean',v:'Strongly conservative'}]},
+  libertarian:{name:'Riley',seed:'Phoenix',skin:'614335',hair:'abb1ba',q:28,mods:3,parties:{Democrat:10,Republican:18,Libertarian:62,Green:4,Independent:6},issues:[{cat:'Privacy/Tech',score:70},{cat:'Criminal Justice',score:55},{cat:'Guns',score:-50}],insights:[{l:'Consistency score',v:'78%'},{l:'Strong positions',v:'5 issues'},{l:'Cross-party views',v:'2 parties above 10%'},{l:'Overall lean',v:'Genuinely split'}]}
+};
+function load(key){
+  document.querySelectorAll('.ps-chip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('ps-'+key).classList.add('on');
+  const p=PROFILES[key];
+  document.getElementById('hero-name').textContent=p.name;
+  document.getElementById('hero-display-name').textContent=p.name;
+  document.getElementById('hero-sub').textContent=`Answered ${p.q} questions · ${p.mods} modules`;
+  document.getElementById('cta-name').textContent=p.name;
+  document.getElementById('cta-secondary').textContent=`View ${p.name}'s full profile`;
+  document.getElementById('hero-avatar').src=`${BASE}?seed=${encodeURIComponent(p.seed)}&skinColor=${p.skin}&hairColor=${p.hair}&size=140&top=ShortHairShortFlat&clothe=GraphicShirt&accessories=Blank&facialHair=Blank`;
+  const entries=Object.entries(p.parties).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0)||1;
+  document.getElementById('share-bar').innerHTML=entries.map((([party,pct],i)=>`<div class="bar-seg${entries.length===1?' only':''}" style="width:${Math.round(pct/total*100)}%;background:${PC[party].c}"></div>`)).join('');
+  document.getElementById('share-pills').innerHTML=entries.slice(0,4).map(([party,pct])=>`<span class="pill" style="background:${PC[party].bg};color:${PC[party].t};border:1px solid ${PC[party].b}"><span class="pill-dot" style="background:${PC[party].t}"></span>${party} ${Math.round(pct)}%</span>`).join('');
+  document.getElementById('share-issues').innerHTML=p.issues.map(issue=>{const abs=Math.abs(issue.score),pos=issue.score>0,cls=abs<10?'neu':pos?'pos':'neg',txt=abs<10?'Neutral':pos?`Progressive +${abs}`:`Conservative −${abs}`;return`<div class="issue-row"><span class="issue-name">${issue.cat}</span><div class="issue-track"><div class="issue-fill" style="${pos?'left:50%':'right:50%'};width:${Math.min(36,abs/2.8)}px;background:${pos?'#378ADD':'#E24B4A'}"></div></div><span class="issue-badge ${cls}">${txt}</span></div>`;}).join('');
+  document.getElementById('blur-content').innerHTML=p.insights.map(ins=>`<div class="insight-row"><span class="insight-lbl">${ins.l}</span><span class="insight-val">${ins.v}</span></div>`).join('');
+}
+load('mixed');
+</script>
+</body>
+</html>

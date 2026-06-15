@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP — Question Screen</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+[data-theme="light"]{
+  --bg:#f5f4f0;--surface:#ffffff;--surface2:rgba(0,0,0,.03);
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);
+  --text:#0d0d0f;--text2:#4a4a52;--text3:#888790;
+  --nav-bg:rgba(245,244,240,.94);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;
+  --opt-hover-bg:#EFF6FF;--opt-hover-border:#185FA5;--opt-hover-text:#0C447C;
+  --opt-sel-bg:#185FA5;--opt-sel-text:#fff;
+  --help-bg:#F8F8F6;--help-border:rgba(0,0,0,.09);
+  --ghost:#888790;--ghost-hover:#4a4a52;
+  --widget-bg:rgba(255,255,255,.95);--widget-border:rgba(0,0,0,.1);
+  --track:rgba(0,0,0,.07);
+  --streak-bg:#FAEEDA;--streak-text:#633806;--streak-border:#EF9F27;
+  --shadow:0 2px 16px rgba(0,0,0,.07);
+  --toggle-bg:#e0dfd9;
+}
+[data-theme="dark"]{
+  --bg:#0a0a0f;--surface:rgba(255,255,255,.045);--surface2:rgba(255,255,255,.025);
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.16);
+  --text:#ffffff;--text2:rgba(255,255,255,.62);--text3:rgba(255,255,255,.35);
+  --nav-bg:rgba(10,10,15,.92);
+  --blue:#378ADD;--blue-bg:rgba(55,138,221,.12);--blue-text:#85B7EB;
+  --opt-hover-bg:rgba(55,138,221,.1);--opt-hover-border:#378ADD;--opt-hover-text:#85B7EB;
+  --opt-sel-bg:#185FA5;--opt-sel-text:#fff;
+  --help-bg:rgba(255,255,255,.04);--help-border:rgba(255,255,255,.08);
+  --ghost:rgba(255,255,255,.3);--ghost-hover:rgba(255,255,255,.55);
+  --widget-bg:rgba(14,14,22,.96);--widget-border:rgba(255,255,255,.1);
+  --track:rgba(255,255,255,.07);
+  --streak-bg:rgba(186,117,23,.15);--streak-text:#FAC775;--streak-border:rgba(239,159,39,.4);
+  --shadow:0 2px 24px rgba(0,0,0,.45);
+  --toggle-bg:#2a2a35;
+}
+
+html{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+body{min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+
+/* smooth theme switch — exclude layout-critical properties */
+html,body,.q-header,.q-card,.opt,.opt-binary,.party-widget,
+.avatar-card,.module-progress-card{
+  transition:background-color .25s,border-color .25s,color .15s,box-shadow .25s;
+}
+img,svg,canvas,.progress-fill,.pw-seg,.opt-indicator{transition:none!important}
+
+/* ─── STICKY HEADER ─── */
+.q-header{
+  position:sticky;top:0;z-index:50;
+  background:var(--nav-bg);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+.q-header-inner{
+  max-width:740px;margin:0 auto;
+  padding:.875rem 1.25rem .5rem;
+  display:flex;align-items:center;gap:.75rem;
+}
+.q-back{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--text3);flex-shrink:0;
+}
+.q-back:hover{border-color:var(--border2);color:var(--text)}
+
+/* Logo in header */
+.q-logo{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--text);flex-shrink:0}
+.q-logo span{color:var(--blue)}
+
+.q-meta{flex:1;min-width:0;text-align:center}
+.q-module-label{
+  font-size:11px;font-weight:700;color:var(--blue);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px;
+}
+.q-counter{font-size:11px;color:var(--text3)}
+
+.q-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.q-pct{font-size:13px;font-weight:700;color:var(--text);min-width:32px;text-align:right}
+
+/* theme toggle pill */
+.theme-toggle{
+  width:40px;height:22px;border-radius:99px;
+  background:var(--toggle-bg);border:1px solid var(--border2);
+  position:relative;cursor:pointer;flex-shrink:0;
+  transition:background .25s,border-color .25s;
+}
+.theme-thumb{
+  position:absolute;top:3px;left:3px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--blue);
+  transition:transform .25s,background .25s;
+}
+[data-theme="dark"] .theme-thumb{transform:translateX(18px)}
+
+/* progress row */
+.q-progress-wrap{max-width:740px;margin:0 auto;padding:.375rem 1.25rem .625rem}
+.progress-track{height:3px;background:var(--track);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:var(--blue);border-radius:99px;width:0%}
+.step-dots{display:flex;gap:5px;margin-top:.5rem;justify-content:center;flex-wrap:wrap}
+.step-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--track);flex-shrink:0;
+  transition:background .3s,width .3s;
+}
+.step-dot.done{background:var(--blue);opacity:.45}
+.step-dot.current{background:var(--blue);width:18px;border-radius:99px}
+
+/* ─── BODY ─── */
+.q-body{max-width:740px;margin:0 auto;padding:1.75rem 1.25rem 6rem}
+.q-layout{display:grid;grid-template-columns:1fr 192px;gap:1.125rem;align-items:start}
+
+/* streak */
+.streak-banner{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--streak-bg);border:1px solid var(--streak-border);
+  border-radius:9px;padding:.45rem .875rem;
+  font-size:12px;color:var(--streak-text);font-weight:600;
+  margin-bottom:.875rem;
+}
+.streak-fire{color:var(--streak-text);font-size:14px}
+
+/* question card */
+.q-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:1.5rem;box-shadow:var(--shadow);
+}
+.q-prompt{
+  font-size:clamp(17px,2.2vw,22px);font-weight:500;
+  line-height:1.6;color:var(--text);margin-bottom:1rem;
+}
+
+/* help box */
+.q-help{
+  display:flex;align-items:flex-start;gap:.5rem;
+  background:var(--help-bg);border:1px solid var(--help-border);
+  border-radius:9px;padding:.625rem .875rem;margin-bottom:1.125rem;cursor:pointer;
+}
+.q-help-icon{font-size:14px;color:var(--text3);flex-shrink:0;margin-top:1px}
+.q-help-body{flex:1;min-width:0}
+.q-help-text{font-size:12px;color:var(--text2);line-height:1.55}
+.q-help-extra{font-size:12px;color:var(--text2);line-height:1.55;margin-top:.375rem;display:none}
+.q-help-extra.open{display:block}
+.q-help-toggle{font-size:11px;color:var(--blue);font-weight:700;white-space:nowrap;flex-shrink:0;padding-left:.5rem;margin-top:1px}
+
+/* options */
+.opts-likert{display:flex;flex-direction:column;gap:7px}
+.opt{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:11px;padding:.9rem 1.1rem;
+  font-size:15px;text-align:left;color:var(--text);
+  display:flex;align-items:center;gap:.875rem;width:100%;
+}
+.opt:hover{
+  border-color:var(--opt-hover-border);
+  background:var(--opt-hover-bg);color:var(--opt-hover-text);
+}
+.opt-indicator{
+  width:17px;height:17px;border-radius:50%;
+  border:1.5px solid var(--border2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.opt:hover .opt-indicator{border-color:var(--opt-hover-border)}
+.opt.flash{
+  background:var(--opt-sel-bg)!important;
+  border-color:var(--opt-sel-bg)!important;
+  color:var(--opt-sel-text)!important;
+  transform:scale(1.01);
+}
+.opt.flash .opt-indicator{
+  background:rgba(255,255,255,.25);
+  border-color:rgba(255,255,255,.4);
+}
+.opt.flash .opt-indicator::after{
+  content:'';display:block;
+  width:7px;height:7px;border-radius:50%;background:#fff;
+}
+.opt-label{font-size:15px;line-height:1.4}
+
+/* binary */
+.opts-binary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-binary{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:11px;padding:1.375rem 1rem;
+  font-size:15px;font-weight:500;text-align:center;color:var(--text);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+}
+.opt-binary:hover{
+  border-color:var(--opt-hover-border);
+  background:var(--opt-hover-bg);color:var(--opt-hover-text);
+}
+.opt-binary.flash{
+  background:var(--opt-sel-bg)!important;
+  border-color:var(--opt-sel-bg)!important;
+  color:var(--opt-sel-text)!important;
+  transform:scale(1.02);
+}
+.opt-binary-icon{font-size:24px;color:var(--text3)}
+.opt-binary:hover .opt-binary-icon,.opt-binary.flash .opt-binary-icon{color:inherit;opacity:.75}
+
+/* secondary row */
+.q-secondary{
+  display:flex;align-items:center;gap:.75rem;
+  padding-top:.875rem;border-top:1px solid var(--border);margin-top:.875rem;
+}
+.ghost-btn{
+  font-size:12px;color:var(--ghost);
+  display:inline-flex;align-items:center;gap:.325rem;padding:.2rem 0;
+}
+.ghost-btn:hover{color:var(--ghost-hover)}
+.ghost-btn i{font-size:13px}
+.skip-left{margin-left:auto;font-size:11px;color:var(--text3)}
+
+/* ─── SIDEBAR ─── */
+.q-sidebar{display:flex;flex-direction:column;gap:.875rem;position:sticky;top:110px}
+.av-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:.875rem;text-align:center;
+  box-shadow:var(--shadow);
+}
+.av-card-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;margin-bottom:.625rem}
+.av-ring{
+  width:68px;height:68px;border-radius:50%;
+  margin:0 auto .5rem;border:2.5px solid var(--border2);
+  overflow:hidden;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+}
+.av-ring svg{width:58px;height:58px}
+.av-note{font-size:10px;color:var(--text3);line-height:1.4}
+
+.mod-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:.875rem;box-shadow:var(--shadow);
+}
+.mod-card-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;margin-bottom:.625rem}
+.mod-rows{display:flex;flex-direction:column;gap:5px}
+.mod-row{display:flex;align-items:center;gap:.5rem;font-size:11px;color:var(--text3);padding:2px 0}
+.mod-row.active{color:var(--text);font-weight:700}
+.mod-row.done{color:var(--blue);opacity:.65}
+.mod-dot{width:6px;height:6px;border-radius:50%;background:var(--track);flex-shrink:0}
+.mod-row.active .mod-dot{background:var(--blue)}
+.mod-row.done .mod-dot{background:var(--blue);opacity:.6}
+
+/* ─── FLOATING PARTY WIDGET ─── */
+.party-widget{
+  position:fixed;bottom:1.375rem;right:1.375rem;z-index:60;
+  background:var(--widget-bg);border:1px solid var(--widget-border);
+  border-radius:14px;padding:.875rem 1rem;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:var(--shadow);
+  min-width:210px;max-width:244px;
+  cursor:pointer;
+}
+.party-widget.collapsed{min-width:auto;max-width:160px;padding:.625rem .875rem}
+
+.pw-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.625rem}
+.pw-head.no-mb{margin-bottom:0}
+.pw-title{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;flex:1}
+.pw-live{display:flex;align-items:center;gap:3px;font-size:10px;color:#3B6D11;white-space:nowrap}
+.pw-dot{
+  width:5px;height:5px;border-radius:50%;background:#3B6D11;flex-shrink:0;
+  animation:blink 1.5s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.pw-chevron{font-size:13px;color:var(--text3);flex-shrink:0;transition:transform .22s}
+.party-widget.collapsed .pw-chevron{transform:rotate(180deg)}
+
+/* stacked bar in widget */
+.pw-bar{
+  height:10px;border-radius:99px;overflow:hidden;
+  display:flex;background:var(--track);margin-bottom:.625rem;
+}
+.pw-seg{height:100%;transition:width .55s cubic-bezier(.16,1,.3,1)}
+.pw-seg:first-child{border-radius:99px 0 0 99px}
+.pw-seg:last-child{border-radius:0 99px 99px 0}
+.pw-seg.only{border-radius:99px}
+
+/* party rows */
+.pw-rows{display:flex;flex-direction:column;gap:5px}
+.pw-row{display:flex;align-items:center;gap:6px}
+.pw-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pw-name{font-size:11px;color:var(--text2);flex:1}
+.pw-pct{font-size:11px;font-weight:700}
+
+/* expanded / collapsed panels */
+#pw-body{overflow:hidden}
+
+/* ─── QUESTION SLIDE TRANSITION ─── */
+.q-slide{transition:opacity .18s ease,transform .22s cubic-bezier(.16,1,.3,1)}
+.q-slide.out{opacity:0;transform:translateX(-14px);pointer-events:none}
+.q-slide.in{opacity:0;transform:translateX(14px)}
+
+/* ─── MODULE DRAWER ─── */
+.mod-drawer-btn{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--text3);flex-shrink:0;
+  transition:all .15s;
+}
+.mod-drawer-btn:hover{border-color:var(--border2);color:var(--text)}
+.mod-drawer-btn.open{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.mod-drawer-overlay{
+  position:fixed;inset:0;z-index:90;background:var(--dim);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.mod-drawer-overlay.show{opacity:1;pointer-events:all}
+.mod-drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:91;
+  background:var(--surface);border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  padding:1.25rem 1.5rem 2.5rem;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);
+  max-height:75vh;overflow-y:auto;
+}
+.mod-drawer.open{transform:translateY(0)}
+.drawer-handle{width:36px;height:4px;border-radius:99px;background:var(--border2);margin:0 auto .875rem}
+.drawer-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:1rem}
+.drawer-mods{display:flex;flex-direction:column;gap:6px}
+.drawer-mod{
+  display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;cursor:pointer;transition:all .15s;
+}
+.drawer-mod:hover{border-color:var(--border2)}
+.drawer-mod.active{background:var(--blue-bg);border-color:rgba(24,95,165,.3)}
+.drawer-mod-icon{width:32px;height:32px;border-radius:8px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--blue);flex-shrink:0}
+.drawer-mod.active .drawer-mod-icon{background:var(--blue);color:#fff}
+.drawer-mod-info{flex:1;min-width:0}
+.drawer-mod-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.drawer-mod.active .drawer-mod-name{color:var(--blue)}
+.drawer-mod-meta{font-size:11px;color:var(--text3)}
+.drawer-mod-check{font-size:14px;color:var(--blue);flex-shrink:0}
+
+/* ─── MODULE COMPLETE ─── */
+.complete-icon{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--blue-bg);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto .875rem;font-size:22px;color:var(--blue);
+}
+.complete-btn{
+  width:100%;padding:.75rem;border-radius:9px;
+  font-size:14px;font-weight:600;
+  background:var(--blue);color:#fff;margin-bottom:.5rem;
+}
+.complete-btn-outline{
+  width:100%;padding:.75rem;border-radius:9px;
+  font-size:14px;background:transparent;color:var(--text2);
+  border:1px solid var(--border2);
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:660px){
+  .q-layout{grid-template-columns:1fr}
+  .q-sidebar{display:none}
+  .party-widget{right:.75rem;bottom:.75rem;min-width:180px}
+}
+@media(max-width:380px){
+  .opts-binary{grid-template-columns:1fr}
+  .party-widget{right:.5rem;bottom:.5rem;min-width:160px}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── STICKY HEADER ─── -->
+<div class="q-header">
+  <div class="q-header-inner">
+    <button class="q-back" onclick="goBack()" aria-label="Go back">
+      <i class="ti ti-arrow-left"></i>
+    </button>
+    <div class="q-meta">
+      <div class="q-module-label" id="hdr-module">Economy &amp; Taxes</div>
+      <div class="q-counter" id="hdr-counter">Question 1 of 8</div>
+    </div>
+    <div class="q-right">
+      <span class="q-pct" id="hdr-pct">0%</span>
+      <button class="mod-drawer-btn" id="mod-drawer-btn" onclick="toggleModDrawer()" title="Switch module">
+        <i class="ti ti-layout-list"></i>
+      </button>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-thumb"></span>
+      </button>
+    </div>
+  </div>
+  <div class="q-progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+    <div class="step-dots" id="step-dots"></div>
+  </div>
+</div>
+
+<!-- ─── BODY ─── -->
+<div class="q-body">
+
+  <div class="q-layout">
+
+    <!-- LEFT: question -->
+    <div>
+      <div class="streak-banner">
+        <i class="ti ti-flame streak-fire"></i>
+        4-day streak — keep it going
+      </div>
+      <div id="q-slide-wrap"></div>
+    </div>
+
+    <!-- RIGHT: sidebar -->
+    <div class="q-sidebar">
+      <div class="av-card">
+        <div class="av-card-lbl">Your avatar</div>
+        <div class="av-ring" id="av-ring">
+          <!-- inline SVG avatar — no external fetch needed -->
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" id="av-svg">
+            <!-- skin -->
+            <circle cx="40" cy="40" r="38" fill="#C68642"/>
+            <!-- hair top -->
+            <ellipse cx="40" cy="18" rx="22" ry="14" fill="#5C4033"/>
+            <!-- face details -->
+            <circle cx="33" cy="38" r="3" fill="#7a4f2a"/>
+            <circle cx="47" cy="38" r="3" fill="#7a4f2a"/>
+            <path d="M33 50 Q40 56 47 50" stroke="#7a4f2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- shirt -->
+            <path d="M18 72 Q18 62 40 62 Q62 62 62 72" fill="#3B82F6"/>
+          </svg>
+        </div>
+        <div class="av-note">Evolves with your answers</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-lbl">Modules</div>
+        <div class="mod-rows" id="mod-rows"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── FLOATING PARTY WIDGET ─── -->
+<div class="party-widget" id="pw" onclick="toggleWidget()">
+  <div class="pw-head" id="pw-head">
+    <span class="pw-title">Party mix</span>
+    <span class="pw-live"><span class="pw-dot"></span> Live</span>
+    <i class="ti ti-chevron-up pw-chevron" id="pw-chev"></i>
+  </div>
+  <div id="pw-body">
+    <div class="pw-bar" id="pw-bar"></div>
+    <div class="pw-rows" id="pw-rows"></div>
+  </div>
+</div>
+
+<script>
+/* ─── THEME ─── */
+function toggleTheme(){
+  const h=document.documentElement;
+  const nxt=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',nxt);
+  localStorage.setItem('pyp-theme',nxt);
+}
+(()=>{const s=localStorage.getItem('pyp-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+/* ─── PARTY CONFIG ─── */
+const PC={
+  D:{name:'Democrat',  c:'#185FA5'},
+  R:{name:'Republican',c:'#A32D2D'},
+  L:{name:'Libertarian',c:'#BA7517'},
+  G:{name:'Green',     c:'#3B6D11'},
+  I:{name:'Independent',c:'#534AB7'}
+};
+
+/* ─── MODULE DATA ─── */
+const MODS=[
+  {id:'m1',title:'Economy & Taxes',questions:[
+    {p:'Wealthy individuals and corporations should pay significantly higher taxes.',h:'Progressive taxation means higher earners pay a larger percentage of their income.',type:'likert',sc:{'Strongly Disagree':{D:-15,R:15,L:15},'Disagree':{D:-8,R:8,L:8},'Neutral':{},'Agree':{D:8,R:-8,G:5},'Strongly Agree':{D:15,R:-15,G:10}}},
+    {p:'The federal minimum wage should be raised to at least $15/hour nationwide.',h:'The current federal minimum wage has been $7.25/hour since 2009.',type:'likert',sc:{'Strongly Disagree':{R:12,L:10},'Disagree':{R:6},'Neutral':{},'Agree':{D:8,G:6},'Strongly Agree':{D:12,G:10}}},
+    {p:'Government regulation of business usually does more harm than good.',h:'This addresses the trade-off between free markets and consumer/worker protections.',type:'likert',sc:{'Strongly Disagree':{D:12,G:8},'Disagree':{D:6},'Neutral':{},'Agree':{R:8,L:10},'Strongly Agree':{R:12,L:15}}},
+    {p:'The government should provide a universal basic income to all citizens.',h:'UBI is a regular cash payment to all citizens regardless of employment status.',type:'likert',sc:{'Strongly Disagree':{R:15,L:12},'Disagree':{R:8},'Neutral':{},'Agree':{D:8,G:10},'Strongly Agree':{D:10,G:15}}},
+    {p:'Labor unions are essential for protecting workers\' rights and wages.',type:'likert',sc:{'Strongly Disagree':{R:12,L:8},'Disagree':{R:6},'Neutral':{},'Agree':{D:10,G:8},'Strongly Agree':{D:15,G:12}}},
+    {p:'Capital gains should be taxed at the same rate as regular income.',type:'likert',sc:{'Strongly Disagree':{R:12,L:10},'Disagree':{R:7},'Neutral':{},'Agree':{D:8,G:8},'Strongly Agree':{D:14,G:12}}},
+    {p:'Free trade agreements benefit the American economy more than they harm it.',h:'Free trade reduces tariffs and trade barriers between countries.',type:'likert',sc:{'Strongly Disagree':{G:8},'Disagree':{},'Neutral':{},'Agree':{D:6,L:8},'Strongly Agree':{D:8,L:12}}},
+    {p:'The wealth gap between rich and poor Americans requires serious government action.',type:'likert',sc:{'Strongly Disagree':{R:12,L:10},'Disagree':{R:6},'Neutral':{},'Agree':{D:8,G:10},'Strongly Agree':{D:15,G:15}}}
+  ]},
+  {id:'m3',title:'Healthcare',questions:[
+    {p:'The US should have a single-payer, government-run healthcare system.',h:'A single-payer system replaces private insurance with universal government coverage.',type:'likert',sc:{'Strongly Disagree':{R:15,L:15},'Disagree':{R:8},'Neutral':{},'Agree':{D:12,G:10},'Strongly Agree':{D:18,G:15}}},
+    {p:'Abortion should be legal without restrictions in the first trimester.',h:'Roe v. Wade protected abortion rights before it was overturned in 2022.',type:'likert',sc:{'Strongly Disagree':{R:15},'Disagree':{R:8},'Neutral':{},'Agree':{D:10,G:10},'Strongly Agree':{D:18,G:15}}},
+    {p:'Prescription drug prices should be capped by federal regulation.',h:'The US pays far higher drug prices than other developed nations.',type:'likert',sc:{'Strongly Disagree':{R:10,L:10},'Disagree':{R:5},'Neutral':{},'Agree':{D:10,G:8},'Strongly Agree':{D:15,G:12}}},
+    {p:'Medicaid and Medicare should be expanded to cover more Americans.',type:'likert',sc:{'Strongly Disagree':{R:12},'Disagree':{R:6},'Neutral':{},'Agree':{D:10,G:8},'Strongly Agree':{D:15,G:12}}},
+    {p:'Paid family leave should be required by federal law for all employers.',type:'likert',sc:{'Strongly Disagree':{R:10,L:8},'Disagree':{R:5},'Neutral':{},'Agree':{D:8,G:8},'Strongly Agree':{D:14,G:12}}},
+    {p:'The Affordable Care Act should be repealed and replaced with a market-based system.',h:'The ACA extended coverage to millions via subsidies and Medicaid expansion.',type:'likert',sc:{'Strongly Disagree':{D:12,G:8},'Disagree':{D:6},'Neutral':{},'Agree':{R:10,L:8},'Strongly Agree':{R:15,L:12}}},
+    {p:'Mental health treatment should receive the same insurance coverage as physical health.',type:'likert',sc:{'Strongly Disagree':{},'Disagree':{},'Neutral':{},'Agree':{D:6,R:4,G:6},'Strongly Agree':{D:10,R:6,G:10}}},
+    {p:'The government should cap the price of insulin.',h:'Insulin prices in the US can be 10x higher than in other countries.',type:'likert',sc:{'Strongly Disagree':{R:8,L:8},'Disagree':{R:4},'Neutral':{},'Agree':{D:8,G:8},'Strongly Agree':{D:14,G:12}}}
+  ]},
+  {id:'m6',title:'Immigration',questions:[
+    {p:'The US should significantly increase deportations of undocumented immigrants.',type:'likert',sc:{'Strongly Disagree':{D:15,G:18},'Disagree':{D:8},'Neutral':{},'Agree':{R:12},'Strongly Agree':{R:20}}},
+    {p:'Undocumented immigrants who have lived here for years should have a path to citizenship.',type:'likert',sc:{'Strongly Disagree':{R:15},'Disagree':{R:8},'Neutral':{},'Agree':{D:12,G:10},'Strongly Agree':{D:18,G:15}}},
+    {p:'The US should accept more refugees from war-torn countries.',type:'likert',sc:{'Strongly Disagree':{R:14},'Disagree':{R:7},'Neutral':{},'Agree':{D:10,G:12},'Strongly Agree':{D:16,G:16}}},
+    {p:'A physical wall along the entire US-Mexico border would improve national security.',type:'binary',opts:['Yes — it would','No — it would not'],sc:{'Yes — it would':{R:18},'No — it would not':{D:14,G:12}}},
+    {p:'DREAMers — brought to the US as children — should be granted permanent legal status.',h:'Around 600,000 people are currently protected under DACA.',type:'likert',sc:{'Strongly Disagree':{R:14},'Disagree':{R:7},'Neutral':{},'Agree':{D:10,G:8},'Strongly Agree':{D:16,G:12}}},
+    {p:'Legal immigration levels should be reduced.',type:'likert',sc:{'Strongly Disagree':{D:12,G:10},'Disagree':{D:6},'Neutral':{},'Agree':{R:12},'Strongly Agree':{R:18}}},
+    {p:'Cities should be allowed to declare themselves sanctuary jurisdictions.',h:'Sanctuary policies limit local cooperation with federal immigration enforcement.',type:'likert',sc:{'Strongly Disagree':{R:14},'Disagree':{R:7},'Neutral':{},'Agree':{D:10,G:10},'Strongly Agree':{D:15,G:14}}},
+    {p:'Employers should face serious penalties for hiring undocumented workers.',type:'likert',sc:{'Strongly Disagree':{D:8,G:8},'Disagree':{D:4},'Neutral':{},'Agree':{R:10},'Strongly Agree':{R:15}}}
+  ]},
+  {id:'m7',title:'Climate & Energy',questions:[
+    {p:'Climate change is an urgent crisis requiring immediate and large-scale government action.',type:'likert',sc:{'Strongly Disagree':{R:15},'Disagree':{R:8},'Neutral':{},'Agree':{D:12,G:10},'Strongly Agree':{D:15,G:20}}},
+    {p:'The US should transition away from fossil fuels as quickly as possible.',type:'likert',sc:{'Strongly Disagree':{R:18},'Disagree':{R:10},'Neutral':{},'Agree':{D:10,G:12},'Strongly Agree':{D:15,G:20}}},
+    {p:'The government should subsidize solar, wind, and other renewable energy industries.',type:'likert',sc:{'Strongly Disagree':{R:10,L:10},'Disagree':{R:5,L:5},'Neutral':{},'Agree':{D:8,G:10},'Strongly Agree':{D:14,G:16}}},
+    {p:'Nuclear power should play a significant role in America\'s clean energy future.',h:'Nuclear is low-carbon but raises concerns about waste and safety.',type:'likert',sc:{'Strongly Disagree':{G:10},'Disagree':{G:5},'Neutral':{},'Agree':{R:8,L:8},'Strongly Agree':{R:12,L:10}}},
+    {p:'A carbon tax is an effective tool for reducing greenhouse gas emissions.',h:'A carbon tax charges companies for each ton of CO2 they emit.',type:'likert',sc:{'Strongly Disagree':{R:12,L:8},'Disagree':{R:6},'Neutral':{},'Agree':{D:8,G:12,L:6},'Strongly Agree':{D:12,G:18,L:8}}},
+    {p:'The US should ban new oil and gas drilling on federal lands.',type:'likert',sc:{'Strongly Disagree':{R:14},'Disagree':{R:7},'Neutral':{},'Agree':{D:8,G:14},'Strongly Agree':{D:12,G:18}}},
+    {p:'Protecting endangered species should take priority over economic development.',type:'likert',sc:{'Strongly Disagree':{R:10},'Disagree':{R:5},'Neutral':{},'Agree':{D:8,G:14},'Strongly Agree':{D:12,G:18}}},
+    {p:'The US should rejoin and strengthen its Paris Climate Agreement commitments.',h:'The Paris Agreement sets targets for reducing greenhouse gas emissions globally.',type:'likert',sc:{'Strongly Disagree':{R:14},'Disagree':{R:7},'Neutral':{},'Agree':{D:10,G:12},'Strongly Agree':{D:15,G:18}}}
+  ]}
+];
+
+const LIKERT=['Strongly Disagree','Disagree','Neutral','Agree','Strongly Agree'];
+const ALL_MOD_TITLES=MODS.map(m=>m.title);
+
+let S={
+  modIdx:0,qIdx:0,
+  scores:{D:10,R:8,L:6,G:4,I:2},
+  skips:3,
+  helpOpen:false,
+  widgetOpen:true,
+  busy:false
+};
+
+/* ─── THEME ─── */
+function toggleTheme(){
+  const h=document.documentElement;
+  const nxt=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',nxt);
+  localStorage.setItem('pyp-theme',nxt);
+  updateAvatarColors();
+}
+
+/* ─── AVATAR COLOR ─── */
+function updateAvatarColors(){
+  const top=topParty();
+  const ring=document.getElementById('av-ring');
+  if(ring) ring.style.borderColor=PC[top].c;
+  const shirt=document.querySelector('#av-svg path');
+  if(shirt) shirt.setAttribute('fill',PC[top].c);
+}
+
+function topParty(){
+  return Object.entries(S.scores).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+/* ─── HEADER ─── */
+function renderHeader(){
+  const mod=MODS[S.modIdx];
+  const total=mod.questions.length;
+  const pct=Math.round(S.qIdx/total*100);
+
+  const hdrMod=document.getElementById('hdr-module');
+  const hdrCnt=document.getElementById('hdr-counter');
+  const hdrPct=document.getElementById('hdr-pct');
+  const progFill=document.getElementById('prog-fill');
+
+  if(hdrMod) hdrMod.textContent=mod.title;
+  if(hdrCnt) hdrCnt.textContent=`Question ${S.qIdx+1} of ${total}`;
+  if(hdrPct) hdrPct.textContent=pct+'%';
+  if(progFill) progFill.style.width=pct+'%';
+
+  const dotsEl=document.getElementById('step-dots');
+  if(dotsEl){
+    dotsEl.innerHTML=Array.from({length:total},(_,i)=>{
+      const cls=i<S.qIdx?'done':i===S.qIdx?'current':'future';
+      return`<div class="step-dot ${cls}"></div>`;
+    }).join('');
+  }
+}
+
+/* ─── QUESTION CARD HTML ─── */
+function questionHTML(){
+  const q=MODS[S.modIdx].questions[S.qIdx];
+  const helpBlock=q.h?`
+    <div class="q-help" onclick="toggleHelp()" id="q-help-box">
+      <i class="ti ti-info-circle q-help-icon" aria-hidden="true"></i>
+      <div class="q-help-body">
+        <span class="q-help-text">Context available</span>
+        <span class="q-help-extra" id="q-help-extra">${q.h}</span>
+      </div>
+      <span class="q-help-toggle" id="q-help-btn">Explain</span>
+    </div>`:'';
+
+  let optsHTML='';
+  if(q.type==='binary'){
+    const icons=['ti-thumb-up','ti-thumb-down'];
+    const safeOpts=(q.opts||['Yes','No']).map(o=>o.replace(/'/g,'&#39;'));
+    optsHTML=`<div class="opts-binary">${safeOpts.map((opt,i)=>`
+      <button class="opt-binary" onclick="answer('${safeOpts[i]}')">
+        <i class="ti ${icons[i]} opt-binary-icon" aria-hidden="true"></i>
+        ${opt}
+      </button>`).join('')}</div>`;
+  } else {
+    optsHTML=`<div class="opts-likert">${LIKERT.map(v=>`
+      <button class="opt" onclick="answer('${v}')">
+        <span class="opt-indicator" aria-hidden="true"></span>
+        <span class="opt-label">${v}</span>
+      </button>`).join('')}</div>`;
+  }
+
+  const skipTxt=S.skips>0?`${S.skips} skips left`:'No skips left';
+
+  return`<div class="q-card q-slide" id="q-card">
+    <p class="q-prompt">${q.p}</p>
+    ${helpBlock}
+    ${optsHTML}
+    <div class="q-secondary">
+      <button class="ghost-btn" onclick="answer('__not_sure__')">
+        <i class="ti ti-help"></i> Not sure
+      </button>
+      <button class="ghost-btn" onclick="answer('__skip__')" ${S.skips<=0?'disabled style="opacity:.4;cursor:not-allowed"':''}>
+        <i class="ti ti-player-skip-forward"></i> Skip
+      </button>
+      <span class="skip-left">${skipTxt}</span>
+    </div>
+  </div>`;
+}
+
+/* ─── RENDER QUESTION ─── */
+function renderQuestion(){
+  const wrap=document.getElementById('q-slide-wrap');
+  if(!wrap) return;
+  wrap.innerHTML=questionHTML();
+  S.helpOpen=false;
+}
+
+/* ─── HELP TOGGLE ─── */
+function toggleHelp(){
+  S.helpOpen=!S.helpOpen;
+  const extra=document.getElementById('q-help-extra');
+  const btn=document.getElementById('q-help-btn');
+  if(extra) extra.className='q-help-extra'+(S.helpOpen?' open':'');
+  if(btn)   btn.textContent=S.helpOpen?'Got it':'Explain';
+}
+
+/* ─── SIDEBAR ─── */
+function renderSidebar(){
+  const el=document.getElementById('mod-rows');
+  if(!el) return;
+  el.innerHTML=ALL_MOD_TITLES.map((t,i)=>{
+    const done=i<S.modIdx,active=i===S.modIdx;
+    const cls=done?'done':active?'active':'';
+    const check=done?`<i class="ti ti-check" style="font-size:9px;color:var(--blue)" aria-hidden="true"></i>`:'';
+    return`<div class="mod-row ${cls}">
+      <span class="mod-dot"></span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</span>
+      ${check}
+    </div>`;
+  }).join('');
+  updateAvatarColors();
+}
+
+/* ─── PARTY WIDGET ─── */
+function renderWidget(){
+  const entries=Object.entries(S.scores)
+    .map(([k,v])=>({key:k,name:PC[k].name,c:PC[k].c,val:Math.max(0,v)}))
+    .sort((a,b)=>b.val-a.val);
+  const total=entries.reduce((s,e)=>s+e.val,0)||1;
+  const visible=entries.filter(e=>e.val>0);
+
+  const bar=document.getElementById('pw-bar');
+  if(bar){
+    bar.innerHTML=visible.map((e,i,arr)=>`
+      <div class="pw-seg${arr.length===1?' only':''}"
+        style="width:${Math.round(e.val/total*100)}%;background:${e.c}">
+      </div>`).join('');
+  }
+
+  const rows=document.getElementById('pw-rows');
+  if(rows){
+    rows.innerHTML=visible.slice(0,4).map(e=>`
+      <div class="pw-row">
+        <span class="pw-swatch" style="background:${e.c}"></span>
+        <span class="pw-name">${e.name}</span>
+        <span class="pw-pct" style="color:${e.c}">${Math.round(e.val/total*100)}%</span>
+      </div>`).join('');
+  }
+}
+
+/* ─── WIDGET TOGGLE ─── */
+function toggleWidget(){
+  S.widgetOpen=!S.widgetOpen;
+  const body=document.getElementById('pw-body');
+  const head=document.getElementById('pw-head');
+  const chev=document.getElementById('pw-chev');
+  const pw=document.getElementById('pw');
+  if(body) body.style.display=S.widgetOpen?'block':'none';
+  if(head) head.className=S.widgetOpen?'pw-head':'pw-head no-mb';
+  if(chev) chev.style.transform=S.widgetOpen?'rotate(0deg)':'rotate(180deg)';
+  if(pw)   pw.classList.toggle('collapsed',!S.widgetOpen);
+}
+
+/* ─── ANSWER ─── */
+function answer(val){
+  if(S.busy) return;
+  if(val==='__skip__'&&S.skips<=0) return;
+  if(val==='__skip__') S.skips--;
+
+  const q=MODS[S.modIdx].questions[S.qIdx];
+
+  /* flash selected button */
+  if(val!=='__skip__'&&val!=='__not_sure__'){
+    const btns=document.querySelectorAll('.opt,.opt-binary');
+    btns.forEach(b=>{
+      const lbl=b.querySelector('.opt-label');
+      const txt=lbl?lbl.textContent.trim():b.textContent.trim();
+      if(txt===val) b.classList.add('flash');
+    });
+    /* score update */
+    const sc=q.sc?.[val]||{};
+    Object.entries(sc).forEach(([k,v])=>{S.scores[k]=(S.scores[k]||0)+v});
+    renderWidget();
+    updateAvatarColors();
+  }
+
+  S.busy=true;
+  const delay=val==='__skip__'||val==='__not_sure__'?0:340;
+  setTimeout(()=>advance(),delay);
+}
+
+/* ─── ADVANCE ─── */
+function advance(){
+  const mod=MODS[S.modIdx];
+  const wrap=document.getElementById('q-slide-wrap');
+
+  if(S.qIdx+1<mod.questions.length){
+    /* slide out */
+    const card=document.getElementById('q-card');
+    if(card) card.classList.add('out');
+
+    setTimeout(()=>{
+      S.qIdx++;
+      renderHeader();
+      /* build new card invisible, then fade in */
+      if(wrap){
+        wrap.innerHTML=questionHTML();
+        const newCard=document.getElementById('q-card');
+        if(newCard){
+          newCard.classList.add('in');
+          /* force reflow then remove .in to trigger transition */
+          void newCard.offsetWidth;
+          newCard.classList.remove('in');
+        }
+      }
+      S.busy=false;
+    },200);
+
+  } else {
+    showComplete();
+  }
+}
+
+/* ─── MODULE COMPLETE ─── */
+function showComplete(){
+  const wrap=document.getElementById('q-slide-wrap');
+  if(!wrap) return;
+  wrap.innerHTML=`
+    <div class="q-card" style="text-align:center;padding:2.25rem 1.5rem">
+      <div class="complete-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <h2 style="font-size:18px;font-weight:600;margin-bottom:.375rem;color:var(--text)">${MODS[S.modIdx].title} — done</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.25rem">${MODS[S.modIdx].questions.length} questions answered</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Your profile just got sharper</p>
+      <div style="display:inline-flex;align-items:center;gap:5px;background:var(--streak-bg);color:var(--streak-text);border-radius:99px;padding:3px 12px;font-size:12px;font-weight:600;margin-bottom:1.375rem">
+        <i class="ti ti-flame" aria-hidden="true"></i> 4-day streak
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="complete-btn" onclick="nextMod()">
+          <i class="ti ti-arrow-right" style="font-size:13px"></i> Next module
+        </button>
+        <button class="complete-btn-outline" onclick="window.location.href='app.html'">
+          View results so far
+        </button>
+      </div>
+    </div>`;
+  S.busy=false;
+}
+
+/* ─── NEXT MODULE ─── */
+function nextMod(){
+  if(S.modIdx+1<MODS.length){
+    S.modIdx++;S.qIdx=0;
+    renderAll();
+    buildDrawer();
+  } else {
+    window.location.href='app.html';
+  }
+}
+
+/* ─── BACK ─── */
+function goBack(){
+  if(S.busy) return;
+  if(S.qIdx>0){
+    S.qIdx--;
+    renderHeader();
+    renderQuestion();
+  } else {
+    window.location.href='index.html';
+  }
+}
+
+/* ─── DEMO MODULE LOADER ─── */
+function loadMod(idx){
+  S.modIdx=idx;S.qIdx=0;S.busy=false;
+  buildDrawer();
+  renderAll();
+}
+
+/* ─── RENDER ALL ─── */
+function renderAll(){
+  renderHeader();
+  renderQuestion();
+  renderSidebar();
+  renderWidget();
+}
+
+renderAll();
+buildDrawer();
+
+/* ─── MODULE DRAWER ─── */
+function openModDrawer(){
+  document.getElementById('mod-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('mod-drawer-btn').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModDrawer(){
+  document.getElementById('mod-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('mod-drawer-btn').classList.remove('open');
+  document.body.style.overflow='';
+}
+function toggleModDrawer(){
+  const open=document.getElementById('mod-drawer').classList.contains('open');
+  open?closeModDrawer():openModDrawer();
+}
+function buildDrawer(){
+  const icons=['ti-coin','ti-shield-lock','ti-heart-rate-monitor','ti-school'];
+  const el=document.getElementById('drawer-mods');
+  if(!el)return;
+  el.innerHTML=MODS.map((m,i)=>`
+    <div class="drawer-mod${i===S.modIdx?' active':''}" onclick="loadModFromDrawer(${i})">
+      <div class="drawer-mod-icon"><i class="ti ${icons[i]||'ti-list'}"></i></div>
+      <div class="drawer-mod-info">
+        <div class="drawer-mod-name">${m.title}</div>
+        <div class="drawer-mod-meta">${m.questions.length} questions</div>
+      </div>
+      ${i===S.modIdx?'<i class="ti ti-check drawer-mod-check"></i>':''}
+    </div>`).join('');
+}
+function loadModFromDrawer(idx){
+  loadMod(idx);
+  closeModDrawer();
+}
+</script>
+
+<!-- ─── MODULE DRAWER ─── -->
+<div class="mod-drawer-overlay" id="drawer-overlay" onclick="closeModDrawer()"></div>
+<div class="mod-drawer" id="mod-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Switch module</div>
+  <div class="drawer-mods" id="drawer-mods"></div>
+</div>
+
+</body>
+</html>

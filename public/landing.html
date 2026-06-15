@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP: Pick Your Politics</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* ── THEME TOKENS ── */
+[data-theme="light"]{
+  --bg:#f5f4f0;
+  --bg2:#eceae4;
+  --bg3:#e4e2db;
+  --surface:#ffffff;
+  --surface2:rgba(0,0,0,.03);
+  --border:rgba(0,0,0,.08);
+  --border2:rgba(0,0,0,.14);
+  --text:#0d0d0f;
+  --text2:#4a4a52;
+  --text3:#888790;
+  --nav-bg:rgba(245,244,240,.88);
+  --texture-color:#0d0d0f;
+  --texture-opacity:.025;
+  --capitol-opacity:.07;
+  --card-bg:#ffffff;
+  --card-hover:rgba(0,0,0,.025);
+  --preview-bg:rgba(0,0,0,.03);
+  --preview-border:rgba(0,0,0,.1);
+  --pill-track:rgba(0,0,0,.06);
+  --stat-bar:rgba(0,0,0,.03);
+  --mode-featured-bg:rgba(24,95,165,.06);
+  --mode-featured-border:rgba(24,95,165,.35);
+  --pricing-featured-bg:rgba(24,95,165,.06);
+  --pricing-featured-border:rgba(24,95,165,.45);
+  --step-bg:rgba(0,0,0,.025);
+  --blue:#185FA5;--blue-dark:#0C447C;--blue-mid:#185FA5;--blue-light:#E6F1FB;
+  --dem:#185FA5;--rep:#A32D2D;--lib:#BA7517;--grn:#3B6D11;--ind:#534AB7;
+  --toggle-bg:#e0dfd9;
+}
+[data-theme="dark"]{
+  --bg:#0a0a0f;
+  --bg2:#111118;
+  --bg3:#16161f;
+  --surface:rgba(255,255,255,.04);
+  --surface2:rgba(255,255,255,.025);
+  --border:rgba(255,255,255,.08);
+  --border2:rgba(255,255,255,.14);
+  --text:#ffffff;
+  --text2:rgba(255,255,255,.62);
+  --text3:rgba(255,255,255,.35);
+  --nav-bg:rgba(10,10,15,.85);
+  --texture-color:#ffffff;
+  --texture-opacity:.028;
+  --capitol-opacity:.055;
+  --card-bg:rgba(255,255,255,.03);
+  --card-hover:rgba(255,255,255,.055);
+  --preview-bg:rgba(255,255,255,.04);
+  --preview-border:rgba(255,255,255,.14);
+  --pill-track:rgba(255,255,255,.06);
+  --stat-bar:rgba(255,255,255,.02);
+  --mode-featured-bg:rgba(24,95,165,.08);
+  --mode-featured-border:rgba(55,138,221,.45);
+  --pricing-featured-bg:rgba(24,95,165,.08);
+  --pricing-featured-border:rgba(55,138,221,.5);
+  --step-bg:rgba(255,255,255,.03);
+  --blue:#378ADD;--blue-dark:#0C447C;--blue-mid:#378ADD;--blue-light:rgba(55,138,221,.15);
+  --dem:#378ADD;--rep:#E24B4A;--lib:#EF9F27;--grn:#639922;--ind:#7F77DD;
+  --toggle-bg:#2a2a35;
+}
+
+html{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth;transition:background .3s,color .3s}
+body{min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+a{color:inherit;text-decoration:none}
+
+/* ── THEME TRANSITION ── */
+*{transition:background-color .25s,border-color .25s,color .15s}
+svg,img,canvas{transition:none}
+
+/* ── BG TEXTURE ── */
+.bg-texture{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;user-select:none;opacity:var(--texture-opacity)}
+.bg-text-line{position:absolute;white-space:nowrap;font-size:clamp(24px,4vw,48px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--texture-color);line-height:1.2}
+.bg-capitol{position:fixed;bottom:0;left:50%;transform:translateX(-50%);pointer-events:none;z-index:0;opacity:var(--capitol-opacity);width:100%;max-width:960px}
+[data-theme="light"] .bg-capitol path,
+[data-theme="light"] .bg-capitol rect,
+[data-theme="light"] .bg-capitol ellipse,
+[data-theme="light"] .bg-capitol polygon{fill:#0d0d0f}
+[data-theme="dark"] .bg-capitol path,
+[data-theme="dark"] .bg-capitol rect,
+[data-theme="dark"] .bg-capitol ellipse,
+[data-theme="dark"] .bg-capitol polygon{fill:#ffffff}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-logo{font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.nav-logo span{color:var(--blue-mid)}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-link{font-size:13px;color:var(--text3);transition:color .15s}
+.nav-link:hover{color:var(--text2)}
+.nav-right{display:flex;align-items:center;gap:.875rem}
+
+/* THEME TOGGLE */
+.theme-toggle{width:44px;height:24px;border-radius:99px;background:var(--toggle-bg);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background .25s;flex-shrink:0}
+.theme-toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--blue-mid);transition:transform .25s,background .25s}
+[data-theme="dark"] .theme-toggle-thumb{transform:translateX(20px)}
+.theme-toggle-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);pointer-events:none}
+[data-theme="light"] .icon-moon{opacity:0}[data-theme="light"] .icon-sun{opacity:1;margin-left:2px}
+[data-theme="dark"] .icon-sun{opacity:0}[data-theme="dark"] .icon-moon{opacity:1;margin-right:2px}
+
+.nav-cta{font-size:13px;font-weight:600;background:var(--blue-mid);color:#fff;padding:.4rem 1rem;border-radius:8px;transition:opacity .15s;white-space:nowrap}
+.nav-cta:hover{opacity:.88}
+.nav-mobile-menu{display:none;font-size:20px;color:var(--text2)}
+
+/* ── HERO ── */
+.hero-section{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 56px);align-items:center}
+.hero-left{padding:4rem 2.5rem 4rem 4rem;display:flex;flex-direction:column;gap:1.75rem}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--blue-mid);font-weight:700}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--blue-mid);animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* ANIMATED H1 */
+.hero-h1{font-size:clamp(34px,4vw,56px);font-weight:700;line-height:1.1;letter-spacing:-.025em;min-height:1.1em}
+.h1-static{color:var(--text)}
+.h1-animated{display:block;position:relative;overflow:hidden;height:1.15em}
+.h1-word{position:absolute;left:0;top:0;color:var(--blue-mid);white-space:nowrap;transition:none}
+.h1-word.entering{animation:wordIn .55s cubic-bezier(.16,1,.3,1) forwards}
+.h1-word.leaving{animation:wordOut .4s cubic-bezier(.4,0,1,1) forwards}
+.h1-word.visible{transform:translateY(0);opacity:1}
+@keyframes wordIn{
+  from{transform:translateY(60%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+@keyframes wordOut{
+  from{transform:translateY(0);opacity:1}
+  to{transform:translateY(-60%);opacity:0}
+}
+
+.hero-tagline{font-size:clamp(14px,1.4vw,17px);color:var(--text2);line-height:1.7;max-width:460px}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-primary{background:var(--blue-mid);color:#fff;padding:.875rem 1.625rem;border-radius:9px;font-size:15px;font-weight:600;transition:opacity .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--text2);padding:.875rem 1.25rem;border-radius:9px;font-size:15px;border:1px solid var(--border2);transition:all .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-ghost:hover{border-color:var(--text3);color:var(--text)}
+.hero-trust{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.trust-item{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:.35rem}
+
+/* HERO RIGHT */
+.hero-right{padding:3rem 4rem 3rem 2rem;display:flex;align-items:center;justify-content:center}
+.preview-card{background:var(--preview-bg);border:1px solid var(--preview-border);border-radius:14px;padding:1.375rem;width:100%;max-width:380px;backdrop-filter:blur(8px)}
+.preview-card-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;font-weight:600}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11;animation:blink 1.5s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.preview-stacked{height:14px;border-radius:99px;overflow:hidden;display:flex;background:var(--pill-track);margin-bottom:.875rem}
+.preview-seg{height:100%;transition:width .7s cubic-bezier(.16,1,.3,1)}
+.preview-seg:first-child{border-radius:99px 0 0 99px}
+.preview-seg:last-child{border-radius:0 99px 99px 0}
+.preview-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1.125rem}
+.preview-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.preview-pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.preview-divider{height:1px;background:var(--border);margin-bottom:1rem}
+.preview-issues{display:flex;flex-direction:column;gap:7px;margin-bottom:1.25rem}
+.preview-issue-row{display:flex;align-items:center;gap:.625rem}
+.preview-issue-name{font-size:12px;color:var(--text2);flex:1}
+.preview-issue-bar{width:72px;height:4px;background:var(--pill-track);border-radius:99px;overflow:hidden;flex-shrink:0}
+.preview-issue-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.preview-issue-pct{font-size:11px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
+.preview-cta{width:100%;padding:.75rem;background:var(--blue-mid);color:#fff;border-radius:9px;font-size:13px;font-weight:600;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.preview-cta:hover{opacity:.88}
+.preview-demo-label{font-size:11px;color:var(--text3);text-align:center;margin-top:.625rem}
+.demo-btns{display:flex;gap:5px;justify-content:center;margin-top:.375rem;flex-wrap:wrap}
+.demo-btn{font-size:10px;padding:.2rem .6rem;border-radius:99px;border:1px solid var(--border2);color:var(--text3);transition:all .12s;cursor:pointer;background:transparent;font-family:inherit}
+.demo-btn:hover{border-color:var(--text3);color:var(--text2)}
+.demo-btn.active-dem{border-color:rgba(24,95,165,.6);color:#185FA5;background:rgba(24,95,165,.08)}
+.demo-btn.active-rep{border-color:rgba(163,45,45,.6);color:#A32D2D;background:rgba(163,45,45,.08)}
+.demo-btn.active-lib{border-color:rgba(186,117,23,.6);color:#BA7517;background:rgba(186,117,23,.08)}
+.demo-btn.active-grn{border-color:rgba(59,109,17,.6);color:#3B6D11;background:rgba(59,109,17,.08)}
+[data-theme="dark"] .demo-btn.active-dem{color:#85B7EB;background:rgba(24,95,165,.15)}
+[data-theme="dark"] .demo-btn.active-rep{color:#F09595;background:rgba(163,45,45,.15)}
+[data-theme="dark"] .demo-btn.active-lib{color:#FAC775;background:rgba(186,117,23,.15)}
+[data-theme="dark"] .demo-btn.active-grn{color:#97C459;background:rgba(59,109,17,.15)}
+
+/* STATS BAR */
+.stats-bar{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--stat-bar);padding:1.375rem 4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.stat-num{font-size:22px;font-weight:700;color:var(--text)}
+.stat-label{font-size:11px;color:var(--text3);text-align:center}
+.stat-divider{width:1px;height:32px;background:var(--border)}
+
+/* HOW IT WORKS */
+.how-section{position:relative;z-index:1;padding:5rem 4rem;max-width:1100px;margin:0 auto}
+.section-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--blue-mid);font-weight:700;margin-bottom:.625rem}
+.section-title{font-size:clamp(24px,2.8vw,36px);font-weight:700;letter-spacing:-.02em;margin-bottom:.75rem;line-height:1.2;color:var(--text)}
+.section-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:3rem}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.step-card{background:var(--step-bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem;transition:border-color .2s,background .2s}
+.step-card:hover{border-color:var(--border2);background:var(--card-hover)}
+.step-num{font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+.step-icon{width:40px;height:40px;border-radius:9px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--blue-mid);margin-bottom:.875rem;border:1px solid rgba(24,95,165,.15)}
+.step-title{font-size:15px;font-weight:600;margin-bottom:.375rem;color:var(--text)}
+.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* MODULES */
+.modules-section{position:relative;z-index:1;padding:4rem;background:var(--stat-bar);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.modules-inner{max-width:1100px;margin:0 auto}
+.modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:2rem}
+.module-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;transition:all .15s;cursor:pointer}
+.module-card:hover{border-color:var(--border2);background:var(--card-hover);transform:translateY(-2px)}
+.module-icon{width:32px;height:32px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--blue-mid);margin-bottom:.625rem;border:1px solid rgba(24,95,165,.12)}
+.module-title{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.module-desc{font-size:11px;color:var(--text3);line-height:1.5}
+.module-meta{font-size:11px;color:var(--text3);margin-top:.5rem;display:flex;align-items:center;gap:4px}
+
+/* MODES */
+.modes-section{position:relative;z-index:1;padding:5rem 4rem;max-width:1100px;margin:0 auto}
+.modes-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:2rem}
+.mode-card{border:1px solid var(--border);border-radius:14px;padding:2rem;transition:all .2s;cursor:pointer;background:var(--card-bg)}
+.mode-card:hover{border-color:var(--border2);background:var(--card-hover)}
+.mode-card.featured{border-color:var(--mode-featured-border);background:var(--mode-featured-bg)}
+.mode-badge{font-size:10px;background:var(--blue-light);color:var(--blue-mid);border:1px solid rgba(24,95,165,.25);padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:1rem;font-weight:600}
+.mode-icon{font-size:24px;color:var(--blue-mid);margin-bottom:.875rem}
+.mode-title{font-size:20px;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.mode-desc{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:1.25rem}
+.mode-features{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.mode-feat{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem}
+.mode-feat i{color:var(--blue-mid);font-size:14px;margin-top:1px;flex-shrink:0}
+.mode-cta{width:100%;padding:.75rem;border-radius:9px;font-size:14px;font-weight:600;transition:all .15s}
+.mode-cta-primary{background:var(--blue-mid);color:#fff}
+.mode-cta-primary:hover{opacity:.88}
+.mode-cta-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.mode-cta-outline:hover{border-color:var(--text3);color:var(--text)}
+
+/* PRICING */
+.pricing-section{position:relative;z-index:1;padding:5rem 4rem;background:var(--stat-bar);border-top:1px solid var(--border)}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:2rem}
+.pricing-card{border:1px solid var(--border);border-radius:14px;padding:2rem;background:var(--card-bg)}
+.pricing-card.featured{border-color:var(--pricing-featured-border);background:var(--pricing-featured-bg)}
+.pricing-badge{font-size:10px;background:var(--blue-light);color:var(--blue-mid);border:1px solid rgba(24,95,165,.25);padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:.75rem;font-weight:600}
+.pricing-tier{font-size:12px;font-weight:700;color:var(--text3);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.07em}
+.pricing-price{font-size:36px;font-weight:700;line-height:1;margin-bottom:.25rem;color:var(--text)}
+.pricing-price span{font-size:15px;font-weight:400;color:var(--text3)}
+.pricing-yr{font-size:12px;color:var(--text3);margin-bottom:1.25rem}
+.pricing-features{display:flex;flex-direction:column;gap:.625rem;margin-bottom:1.5rem}
+.pricing-feat{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:.5rem;line-height:1.45}
+.pricing-feat i{font-size:14px;margin-top:1px;flex-shrink:0}
+.pricing-feat i.yes{color:#3B6D11}
+.pricing-feat i.no{color:var(--text3)}
+.pricing-btn{width:100%;padding:.75rem;border-radius:9px;font-size:14px;font-weight:600;transition:all .15s}
+.pricing-btn-primary{background:var(--blue-mid);color:#fff}
+.pricing-btn-primary:hover{opacity:.88}
+.pricing-btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.pricing-btn-outline:hover{border-color:var(--text3);color:var(--text)}
+
+/* FOOTER */
+footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-size:15px;font-weight:700;color:var(--text)}
+.footer-logo span{color:var(--blue-mid)}
+.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
+.footer-link{font-size:12px;color:var(--text3);transition:color .15s}
+.footer-link:hover{color:var(--text2)}
+.footer-copy{font-size:12px;color:var(--text3)}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero-section{grid-template-columns:1fr;min-height:auto}
+  .hero-left{padding:3rem 1.5rem 1.5rem}
+  .hero-right{padding:0 1.5rem 3rem;justify-content:flex-start}
+  .preview-card{max-width:100%}
+  .stats-bar{padding:1.25rem 1.5rem;justify-content:center;gap:1.5rem}
+  .stat-divider{display:none}
+  .how-section,.modes-section{padding:3rem 1.5rem}
+  .modules-section,.pricing-section{padding:3rem 1.5rem}
+  .steps-grid{grid-template-columns:1fr}
+  .modules-grid{grid-template-columns:repeat(2,1fr)}
+  .modes-grid,.pricing-grid{grid-template-columns:1fr}
+  footer{padding:1.5rem;flex-direction:column;align-items:flex-start}
+  .nav-links{display:none}
+  .nav-mobile-menu{display:block}
+}
+@media(max-width:480px){
+  .hero-h1{font-size:30px}
+  .hero-actions{flex-direction:column}
+  .btn-primary,.btn-ghost{width:100%;justify-content:center}
+  .modules-grid{grid-template-columns:1fr}
+  .stats-bar{flex-direction:column;align-items:flex-start;gap:.875rem}
+}
+</style>
+</head>
+<body>
+
+<!-- BG TEXTURE -->
+<div class="bg-texture" aria-hidden="true">
+  <div class="bg-text-line" style="top:4%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+  <div class="bg-text-line" style="top:14%;left:25%;transform:rotate(-3deg)">One Nation · Indivisible · Your Voice Matters</div>
+  <div class="bg-text-line" style="top:24%;left:-4%;transform:rotate(-3deg)">Life · Liberty · The Pursuit · We the People</div>
+  <div class="bg-text-line" style="top:34%;left:18%;transform:rotate(-3deg)">Know Your Views · Own Your Voice · Pick Your Politics</div>
+  <div class="bg-text-line" style="top:44%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+  <div class="bg-text-line" style="top:54%;left:30%;transform:rotate(-3deg)">One Nation · Indivisible · Your Voice Matters</div>
+  <div class="bg-text-line" style="top:64%;left:-4%;transform:rotate(-3deg)">Life · Liberty · The Pursuit · We the People</div>
+  <div class="bg-text-line" style="top:74%;left:10%;transform:rotate(-3deg)">Know Your Views · Own Your Voice · Pick Your Politics</div>
+  <div class="bg-text-line" style="top:84%;left:-2%;transform:rotate(-3deg)">We the People · Equal Justice · Liberty for All</div>
+</div>
+
+<!-- CAPITOL -->
+<svg class="bg-capitol" aria-hidden="true" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="450" cy="120" rx="52" ry="58"/>
+  <rect x="398" y="118" width="104" height="10" rx="2"/>
+  <rect x="440" y="62" width="20" height="22" rx="3"/>
+  <rect x="444" y="48" width="12" height="16" rx="2"/>
+  <polygon points="450,38 444,48 456,48"/>
+  <rect x="410" y="128" width="80" height="28" rx="2"/>
+  <rect x="415" y="128" width="5" height="28"/><rect x="427" y="128" width="5" height="28"/>
+  <rect x="439" y="128" width="5" height="28"/><rect x="451" y="128" width="5" height="28"/>
+  <rect x="463" y="128" width="5" height="28"/><rect x="475" y="128" width="5" height="28"/>
+  <rect x="320" y="156" width="260" height="80" rx="2"/>
+  <rect x="140" y="186" width="180" height="50" rx="2"/>
+  <rect x="580" y="186" width="180" height="50" rx="2"/>
+  <rect x="155" y="186" width="4" height="50"/><rect x="170" y="186" width="4" height="50"/>
+  <rect x="185" y="186" width="4" height="50"/><rect x="200" y="186" width="4" height="50"/>
+  <rect x="215" y="186" width="4" height="50"/><rect x="230" y="186" width="4" height="50"/>
+  <rect x="596" y="186" width="4" height="50"/><rect x="611" y="186" width="4" height="50"/>
+  <rect x="626" y="186" width="4" height="50"/><rect x="641" y="186" width="4" height="50"/>
+  <rect x="656" y="186" width="4" height="50"/><rect x="671" y="186" width="4" height="50"/>
+  <rect x="338" y="156" width="5" height="80"/><rect x="355" y="156" width="5" height="80"/>
+  <rect x="372" y="156" width="5" height="80"/><rect x="389" y="156" width="5" height="80"/>
+  <rect x="506" y="156" width="5" height="80"/><rect x="523" y="156" width="5" height="80"/>
+  <rect x="540" y="156" width="5" height="80"/><rect x="557" y="156" width="5" height="80"/>
+  <rect x="280" y="236" width="340" height="8" rx="1"/>
+  <rect x="250" y="244" width="400" height="8" rx="1"/>
+  <rect x="130" y="236" width="120" height="8" rx="1"/>
+  <rect x="650" y="236" width="120" height="8" rx="1"/>
+  <rect x="0" y="252" width="900" height="48"/>
+</svg>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">PY<span>P</span></span>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#modules" class="nav-link">Topics</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-toggle-thumb"></span>
+    </button>
+    <a href="#" class="nav-cta">Start free</a>
+    <button class="nav-mobile-menu" aria-label="Menu"><i class="ti ti-menu-2"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section">
+  <div class="hero-left">
+    <p class="hero-eyebrow"><span class="hero-eyebrow-dot"></span> US Political Questionnaire</p>
+    <h1 class="hero-h1">
+      <span class="h1-static" id="h1-line1">Pick Your Politics</span>
+      <span class="h1-animated" id="h1-animated" aria-live="polite">
+        <span class="h1-word visible" id="h1-word">Know your views.</span>
+      </span>
+    </h1>
+    <p class="hero-tagline">PYP gives you a clear, nuanced picture of your political identity — not a label, not a tribe. Just your actual views, mapped across the issues that matter.</p>
+    <div class="hero-actions">
+      <button class="btn-primary"><i class="ti ti-bolt" style="font-size:16px"></i> Start Daily Dose — free</button>
+      <button class="btn-ghost"><i class="ti ti-books" style="font-size:16px"></i> Full Run</button>
+    </div>
+    <div class="hero-trust">
+      <span class="trust-item"><i class="ti ti-lock"></i> No login to start</span>
+      <span class="trust-item"><i class="ti ti-clock"></i> 3 min/day</span>
+      <span class="trust-item"><i class="ti ti-share"></i> Shareable results</span>
+      <span class="trust-item"><i class="ti ti-device-mobile"></i> Works offline</span>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="preview-card">
+      <div class="preview-card-label">
+        <span class="live-dot"></span> Live profile preview
+      </div>
+      <div class="preview-stacked" id="preview-bar"></div>
+      <div class="preview-pills" id="preview-pills"></div>
+      <div class="preview-divider"></div>
+      <div class="preview-issues" id="preview-issues"></div>
+      <button class="preview-cta"><i class="ti ti-bolt" style="font-size:14px"></i> See your full profile</button>
+      <p class="preview-demo-label">Try a profile:</p>
+      <div class="demo-btns" id="demo-btns">
+        <button class="demo-btn" onclick="setDemo('mixed')">Mixed</button>
+        <button class="demo-btn" onclick="setDemo('progressive')">Progressive</button>
+        <button class="demo-btn" onclick="setDemo('conservative')">Conservative</button>
+        <button class="demo-btn" onclick="setDemo('libertarian')">Libertarian</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><span class="stat-num">64</span><span class="stat-label">Questions across<br>8 modules</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><span class="stat-num">5</span><span class="stat-label">Party alignments<br>tracked</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><span class="stat-num">11</span><span class="stat-label">Issue categories<br>scored</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><span class="stat-num">3 min</span><span class="stat-label">Daily Dose<br>per session</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Neutral, fact-based<br>questions</span></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <p class="section-eyebrow">How it works</p>
+  <h2 class="section-title">From question to clarity<br>in three steps</h2>
+  <p class="section-sub">PYP isn't a personality quiz. It's a structured political self-assessment built to show nuance — not sort you into a box.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">Step 01</div>
+      <div class="step-icon"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+      <div class="step-title">Build your avatar</div>
+      <div class="step-desc">Choose a base style, skin tone, hair, and presentation. Your avatar evolves as you answer — unlocking details that reflect your political profile.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Step 02</div>
+      <div class="step-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div>
+      <div class="step-title">Answer questions</div>
+      <div class="step-desc">5 questions a day or a full module in one go. Every question has a neutral explainer. Say "not sure" or skip — no pressure to have an opinion on everything.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Step 03</div>
+      <div class="step-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div>
+      <div class="step-title">Get your profile</div>
+      <div class="step-desc">See your party mix, issue-by-issue positions, a consistency score, and insights sharp enough to share — and spark a real conversation.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="modules-section" id="modules">
+  <div class="modules-inner">
+    <p class="section-eyebrow">8 topic modules</p>
+    <h2 class="section-title">Every issue that matters</h2>
+    <div class="modules-grid">
+      <div class="module-card"><div class="module-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="module-title">Economy & Taxes</div><div class="module-desc">Taxation, wages, UBI, regulation</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div><div class="module-title">Privacy & Tech</div><div class="module-desc">Surveillance, Big Tech, data rights</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-heart-rate-monitor" aria-hidden="true"></i></div><div class="module-title">Healthcare</div><div class="module-desc">Insurance, access, safety net</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-school" aria-hidden="true"></i></div><div class="module-title">Education & Family</div><div class="module-desc">Student debt, vouchers, childcare</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-gavel" aria-hidden="true"></i></div><div class="module-title">Crime & Justice</div><div class="module-desc">Policing, sentencing, reform</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-world" aria-hidden="true"></i></div><div class="module-title">Immigration</div><div class="module-desc">Pathways, border, asylum</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div><div class="module-title">Climate & Energy</div><div class="module-desc">Emissions, fossil fuels, green jobs</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+      <div class="module-card"><div class="module-icon"><i class="ti ti-globe" aria-hidden="true"></i></div><div class="module-title">Foreign Policy</div><div class="module-desc">Defense, alliances, foreign aid</div><div class="module-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODES -->
+<section class="modes-section">
+  <p class="section-eyebrow">Two ways to play</p>
+  <h2 class="section-title">Your pace, your depth</h2>
+  <div class="modes-grid">
+    <div class="mode-card featured">
+      <div class="mode-badge">Recommended</div>
+      <div class="mode-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+      <h3 class="mode-title">Daily Dose</h3>
+      <p class="mode-desc">5 questions every day. Build your profile gradually, keep a streak alive, and watch your political picture sharpen over time.</p>
+      <div class="mode-features">
+        <div class="mode-feat"><i class="ti ti-check"></i> Exactly 5 questions/day</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Daily streak tracking</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> ~3 minutes per session</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Profile builds over time</div>
+      </div>
+      <button class="mode-cta mode-cta-primary">Start Daily Dose</button>
+    </div>
+    <div class="mode-card">
+      <div class="mode-icon"><i class="ti ti-books" aria-hidden="true"></i></div>
+      <h3 class="mode-title">Full Run</h3>
+      <p class="mode-desc">Pick a topic and go deep. Complete a full module in one session for immediate, comprehensive results on that issue area.</p>
+      <div class="mode-features">
+        <div class="mode-feat"><i class="ti ti-check"></i> 8–10 questions per module</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Choose your topic order</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> ~8 minutes per module</div>
+        <div class="mode-feat"><i class="ti ti-check"></i> Instant module results</div>
+      </div>
+      <button class="mode-cta mode-cta-outline">Start Full Run</button>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <p class="section-eyebrow">Pricing</p>
+    <h2 class="section-title">Start free. Go deeper with PYP+</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Free</div>
+        <div class="pricing-price">$0<span>/forever</span></div>
+        <div class="pricing-yr">&nbsp;</div>
+        <div class="pricing-features">
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Daily Dose (5 questions/day)</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Full Run — all 8 modules</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Party mix + issue breakdown</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Share your results publicly</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> DiceBear avatar builder</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i> Trend charts over time</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i> Retake history + comparison</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i> Consistency score tracking</div>
+          <div class="pricing-feat"><i class="ti ti-minus no"></i> Advanced share cards</div>
+        </div>
+        <button class="pricing-btn pricing-btn-outline">Start free</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">PYP+</div>
+        <div class="pricing-tier">Premium</div>
+        <div class="pricing-price">$9<span>/month</span></div>
+        <div class="pricing-yr">or $79/year — save 27%</div>
+        <div class="pricing-features">
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Everything in Free</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Trend charts — watch views evolve</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Retake history + side-by-side compare</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Consistency score over time</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Advanced modules (coming soon)</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> High-res share cards + OG images</div>
+          <div class="pricing-feat"><i class="ti ti-check yes"></i> Priority access to new features</div>
+        </div>
+        <button class="pricing-btn pricing-btn-primary">Upgrade to PYP+</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">PY<span>P</span></span>
+  <div class="footer-links">
+    <a href="#" class="footer-link">About</a>
+    <a href="#" class="footer-link">Privacy</a>
+    <a href="#" class="footer-link">Terms</a>
+    <a href="#" class="footer-link">Methodology</a>
+    <a href="#" class="footer-link">Contact</a>
+  </div>
+  <span class="footer-copy">© 2025 PYP. Made to inform, not divide.</span>
+</footer>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+  const html=document.documentElement;
+  html.setAttribute('data-theme',html.getAttribute('data-theme')==='dark'?'light':'dark');
+  localStorage.setItem('pyp-theme',html.getAttribute('data-theme'));
+}
+(function(){
+  const saved=localStorage.getItem('pyp-theme');
+  if(saved)document.documentElement.setAttribute('data-theme',saved);
+})();
+
+/* ── H1 WORD ROTATOR ── */
+const H1_SEQUENCES=[
+  ['Pick Your Politics','Know your views.','Own your voice.'],
+  ['Pick Your Politics','Find your identity.','Share your truth.'],
+  ['Pick Your Politics','Beyond the label.','Into the nuance.'],
+];
+let seq=H1_SEQUENCES[0],seqIdx=0,wordIdx=0,line1Idx=0;
+const TIMINGS=[2800,2000,2000];
+
+function rotateH1(){
+  const el=document.getElementById('h1-word');
+  const line1=document.getElementById('h1-line1');
+  if(!el||!line1)return;
+
+  wordIdx=(wordIdx+1)%seq.length;
+
+  if(wordIdx===0){
+    seqIdx=(seqIdx+1)%H1_SEQUENCES.length;
+    seq=H1_SEQUENCES[seqIdx];
+  }
+
+  const next=seq[wordIdx];
+  const isTitle=wordIdx===0;
+
+  if(isTitle){
+    line1.style.display='block';
+    el.classList.remove('visible');
+    el.classList.add('leaving');
+    setTimeout(()=>{
+      line1.textContent=next;
+      line1.style.opacity='0';
+      line1.style.transform='translateY(60%)';
+      el.style.display='none';
+      el.classList.remove('leaving');
+      requestAnimationFrame(()=>{
+        line1.style.transition='transform .55s cubic-bezier(.16,1,.3,1),opacity .55s cubic-bezier(.16,1,.3,1)';
+        line1.style.transform='translateY(0)';
+        line1.style.opacity='1';
+      });
+    },380);
+  } else {
+    el.style.display='block';
+    const leaving=el.cloneNode(true);
+    leaving.classList.remove('entering','visible');
+    leaving.classList.add('leaving');
+    el.parentNode.appendChild(leaving);
+    setTimeout(()=>leaving.remove(),420);
+    el.textContent=next;
+    el.classList.remove('visible','leaving');
+    el.classList.add('entering');
+    setTimeout(()=>{el.classList.remove('entering');el.classList.add('visible')},550);
+    line1.style.transition='';
+  }
+
+  setTimeout(rotateH1, TIMINGS[wordIdx]||2400);
+}
+
+setTimeout(rotateH1, TIMINGS[0]);
+
+/* ── PREVIEW CARD ── */
+const PC_LIGHT={
+  Democrat:{c:'#185FA5',bg:'#E6F1FB',t:'#0C447C',b:'rgba(24,95,165,.25)'},
+  Republican:{c:'#A32D2D',bg:'#FCEBEB',t:'#791F1F',b:'rgba(163,45,45,.25)'},
+  Libertarian:{c:'#BA7517',bg:'#FAEEDA',t:'#633806',b:'rgba(186,117,23,.25)'},
+  Green:{c:'#3B6D11',bg:'#EAF3DE',t:'#27500A',b:'rgba(59,109,17,.25)'},
+  Independent:{c:'#534AB7',bg:'#EEEDFE',t:'#3C3489',b:'rgba(83,74,183,.25)'}
+};
+const PC_DARK={
+  Democrat:{c:'#378ADD',bg:'rgba(24,95,165,.18)',t:'#85B7EB',b:'rgba(24,95,165,.3)'},
+  Republican:{c:'#E24B4A',bg:'rgba(163,45,45,.18)',t:'#F09595',b:'rgba(226,75,74,.3)'},
+  Libertarian:{c:'#EF9F27',bg:'rgba(186,117,23,.18)',t:'#FAC775',b:'rgba(239,159,39,.3)'},
+  Green:{c:'#639922',bg:'rgba(59,109,17,.18)',t:'#97C459',b:'rgba(99,153,34,.3)'},
+  Independent:{c:'#7F77DD',bg:'rgba(83,74,183,.18)',t:'#AFA9EC',b:'rgba(127,119,221,.3)'}
+};
+const DEMOS={
+  mixed:{key:'mixed',parties:{Democrat:38,Republican:24,Libertarian:22,Green:11,Independent:5},issues:[{n:'Economy/Taxes',s:62},{n:'Climate/Energy',s:55},{n:'Immigration',s:-41}],btnClass:'active-dem'},
+  progressive:{key:'progressive',parties:{Democrat:68,Republican:4,Libertarian:8,Green:16,Independent:4},issues:[{n:'Climate/Energy',s:90},{n:'Healthcare',s:78},{n:'Economy/Taxes',s:82}],btnClass:'active-rep'},
+  conservative:{key:'conservative',parties:{Democrat:5,Republican:71,Libertarian:14,Green:2,Independent:8},issues:[{n:'Immigration',s:-82},{n:'Guns',s:-78},{n:'Economy/Taxes',s:-75}],btnClass:'active-rep'},
+  libertarian:{key:'libertarian',parties:{Democrat:10,Republican:18,Libertarian:62,Green:4,Independent:6},issues:[{n:'Privacy/Tech',s:70},{n:'Criminal Justice',s:55},{n:'Guns',s:-50}],btnClass:'active-lib'}
+};
+let currentDemo='mixed';
+
+function setDemo(key){
+  currentDemo=key;
+  renderDemo();
+  document.querySelectorAll('.demo-btn').forEach(b=>b.className='demo-btn');
+  const btn=document.querySelector(`[onclick="setDemo('${key}')"]`);
+  if(btn)btn.classList.add(DEMOS[key].btnClass);
+}
+
+function renderDemo(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const PC=isDark?PC_DARK:PC_LIGHT;
+  const d=DEMOS[currentDemo];
+  const entries=Object.entries(d.parties).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0)||1;
+
+  document.getElementById('preview-bar').innerHTML=entries.map(([p,v],i)=>`
+    <div class="preview-seg${entries.length===1?' only':''}"
+      style="width:${Math.round(v/total*100)}%;background:${PC[p]?.c||'#888'}"></div>`).join('');
+
+  document.getElementById('preview-pills').innerHTML=entries.slice(0,3).map(([p,v])=>`
+    <span class="preview-pill"
+      style="background:${PC[p]?.bg||'#eee'};color:${PC[p]?.t||'#333'};border:1px solid ${PC[p]?.b||'#ccc'}">
+      <span class="preview-pill-dot" style="background:${PC[p]?.t||'#333'}"></span>
+      ${p} ${Math.round(v)}%
+    </span>`).join('');
+
+  document.getElementById('preview-issues').innerHTML=d.issues.map(iss=>{
+    const pos=iss.s>0;
+    const col=isDark?(pos?'#378ADD':'#E24B4A'):(pos?'#185FA5':'#A32D2D');
+    return`<div class="preview-issue-row">
+      <span class="preview-issue-name">${iss.n}</span>
+      <div class="preview-issue-bar"><div class="preview-issue-fill" style="width:${Math.min(100,Math.abs(iss.s))}%;background:${col}"></div></div>
+      <span class="preview-issue-pct" style="color:${col}">${iss.s>0?'+':''}${iss.s}</span>
+    </div>`;
+  }).join('');
+}
+
+/* re-render preview when theme switches so colors update */
+const origToggle=window.toggleTheme;
+window.toggleTheme=function(){origToggle();setTimeout(renderDemo,50)};
+
+setDemo('mixed');
+
+/* auto-cycle demo profiles */
+const demoKeys=['mixed','progressive','conservative','libertarian'];
+let demoIdx=0;
+setInterval(()=>{
+  demoIdx=(demoIdx+1)%demoKeys.length;
+  setDemo(demoKeys[demoIdx]);
+},4000);
+</script>
+</body>
+</html>
