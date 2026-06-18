@@ -1159,17 +1159,24 @@ async function hydrateBackendPanels(){
 }
 
 async function hydrateAdminModules(){
-  const result=await PYP.adminList('modules');
+  const result=await PYP.adminList('questions');
   if(result.error||!result.data?.length) return;
   const tbody=document.querySelector('#admin-modules tbody');
   if(!tbody) return;
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  tbody.innerHTML=result.data.map(mod=>`
+  const modules=Object.values(result.data.reduce((acc,q)=>{
+    const id=q.module_id||'unassigned';
+    if(!acc[id]) acc[id]={id,title:q.module_title||id,count:0,active:0};
+    acc[id].count++;
+    if(q.is_active) acc[id].active++;
+    return acc;
+  },{}));
+  tbody.innerHTML=modules.map(mod=>`
     <tr>
       <td>${esc(mod.title)}</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span class="admin-status ${mod.is_published?'pub':'draft'}">${mod.is_published?'Published':'Draft'}</span></td>
+      <td>${mod.count}</td>
+      <td>${mod.count?Math.round(mod.active/mod.count*100):0}% active</td>
+      <td><span class="admin-status ${mod.active?'pub':'draft'}">${mod.active?'Published':'Draft'}</span></td>
       <td class="admin-actions">
         <button class="admin-icon-btn" title="Edit module" data-admin-action="edit-module" data-module-id="${esc(mod.id)}" data-module-title="${esc(mod.title)}"><i class="ti ti-edit"></i></button>
         <button class="admin-icon-btn" title="Delete module" data-admin-action="delete-module" data-module-id="${esc(mod.id)}"><i class="ti ti-trash"></i></button>
@@ -1191,9 +1198,17 @@ function initAdminCrud(){
 async function adminCreateModule(){
   const title=prompt('Module title');
   if(!title) return;
-  const id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')||crypto.randomUUID();
-  const description=prompt('Module description')||'';
-  const result=await PYP.adminUpsert('modules',{id,title,description,icon:'ti-list',is_published:false});
+  const id=(prompt('Module id (m1 through m8)')||'').trim().toLowerCase();
+  if(!/^m[1-8]$/.test(id)) return alert('Module id must be m1 through m8.');
+  const result=await PYP.adminUpsert('questions',{
+    module_id:id,
+    module_title:title,
+    order_index:1,
+    prompt:'Draft question prompt',
+    question_type:'likert',
+    scoring:{},
+    is_active:false
+  });
   if(result.error) return alert(result.error.message||'Could not create module.');
   hydrateAdminModules();
 }
@@ -1201,14 +1216,14 @@ async function adminCreateModule(){
 async function adminEditModule(id,currentTitle){
   const title=prompt('Module title',currentTitle);
   if(!title) return;
-  const result=await PYP.adminUpsert('modules',{id,title});
+  const result=await PYP.adminUpdateWhere('questions',{module_id:id},{module_title:title});
   if(result.error) return alert(result.error.message||'Could not update module.');
   hydrateAdminModules();
 }
 
 async function adminDeleteModule(id){
   if(!confirm('Delete this module? Questions attached to it will also be deleted in Supabase.')) return;
-  const result=await PYP.adminDelete('modules',id);
+  const result=await PYP.adminDeleteWhere('questions',{module_id:id});
   if(result.error) return alert(result.error.message||'Could not delete module.');
   hydrateAdminModules();
 }

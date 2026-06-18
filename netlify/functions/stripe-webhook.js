@@ -16,18 +16,27 @@ async function mirrorSubscription(subscription) {
   const userId = subscription.metadata?.user_id;
   if (!userId) return;
   const item = subscription.items?.data?.[0];
-  await supabaseRest('profiles', {
+  const priceId = item?.price?.id || null;
+  const plan = priceId === process.env.STRIPE_PRICE_YEARLY ? 'yearly' : 'monthly';
+  const status = subscription.status === 'canceled' ? 'cancelled' : subscription.status;
+  await supabaseRest('subscriptions?on_conflict=user_id', {
     method: 'POST',
     headers: { prefer: 'resolution=merge-duplicates' },
     body: JSON.stringify({
-      id: userId,
+      user_id: userId,
       stripe_customer_id: subscription.customer,
-      subscription_status: subscription.status,
-      stripe_subscription_id: subscription.id,
-      price_id: item?.price?.id || null,
+      stripe_sub_id: subscription.id,
+      plan,
+      status,
       current_period_end: subscription.current_period_end
         ? new Date(subscription.current_period_end * 1000).toISOString()
         : null
+    })
+  });
+  await supabaseRest(`users?id=eq.${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      plan: ['active','trialing'].includes(subscription.status) ? 'plus' : 'free'
     })
   });
 }

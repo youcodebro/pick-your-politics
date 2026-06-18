@@ -1,112 +1,24 @@
+-- PYP decided schema.
+-- WARNING: this drops and recreates all PYP public tables.
+
+begin;
+
 create extension if not exists "pgcrypto";
 
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text,
-  display_name text,
-  avatar_seed text,
-  role text not null default 'user' check (role in ('user','admin')),
-  stripe_customer_id text,
-  stripe_subscription_id text,
-  subscription_status text default 'inactive',
-  price_id text,
-  current_period_end timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+drop table if exists public.responses cascade;
+drop table if exists public.sessions cascade;
+drop table if exists public.share_links cascade;
+drop table if exists public.subscriptions cascade;
+drop table if exists public.questions cascade;
+drop table if exists public.users cascade;
 
-create table if not exists public.question_sessions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  mode text not null default 'daily' check (mode in ('daily','full','module')),
-  status text not null default 'in_progress',
-  module_id text,
-  current_question_index integer not null default 0,
-  party_scores jsonb not null default '{}'::jsonb,
-  issue_scores jsonb not null default '{}'::jsonb,
-  started_at timestamptz not null default now(),
-  completed_at timestamptz,
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.answers (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  session_id uuid not null references public.question_sessions(id) on delete cascade,
-  module_id text not null,
-  question_index integer not null,
-  question_prompt text not null,
-  answer_value text not null,
-  answer_kind text not null default 'answer',
-  party_delta jsonb not null default '{}'::jsonb,
-  party_scores jsonb not null default '{}'::jsonb,
-  issue_scores jsonb not null default '{}'::jsonb,
-  answered_at timestamptz not null default now(),
-  unique(session_id,module_id,question_index)
-);
-
-create table if not exists public.user_progress (
-  user_id uuid primary key references public.profiles(id) on delete cascade,
-  current_session_id uuid references public.question_sessions(id) on delete set null,
-  current_module_id text,
-  current_question_index integer not null default 0,
-  completed_modules text[] not null default '{}',
-  streak_count integer not null default 0,
-  last_activity_at timestamptz,
-  party_scores jsonb not null default '{}'::jsonb,
-  issue_scores jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.modules (
-  id text primary key,
-  title text not null,
-  description text,
-  icon text,
-  sort_order integer not null default 0,
-  is_published boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.questions (
-  id uuid primary key default gen_random_uuid(),
-  module_id text not null references public.modules(id) on delete cascade,
-  prompt text not null,
-  help_text text,
-  type text not null default 'likert' check (type in ('likert','binary')),
-  options jsonb not null default '[]'::jsonb,
-  sort_order integer not null default 0,
-  is_published boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.scoring_rules (
-  id uuid primary key default gen_random_uuid(),
-  question_id uuid not null references public.questions(id) on delete cascade,
-  answer_value text not null,
-  party_delta jsonb not null default '{}'::jsonb,
-  issue_delta jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique(question_id,answer_value)
-);
-
-create table if not exists public.public_shares (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  token text not null unique default encode(gen_random_bytes(12),'hex'),
-  display_name text not null,
-  avatar_seed text,
-  party_scores jsonb not null default '{}'::jsonb,
-  issue_scores jsonb not null default '{}'::jsonb,
-  answered_count integer not null default 0,
-  completed_modules integer not null default 0,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+drop table if exists public.answers cascade;
+drop table if exists public.question_sessions cascade;
+drop table if exists public.user_progress cascade;
+drop table if exists public.public_shares cascade;
+drop table if exists public.scoring_rules cascade;
+drop table if exists public.modules cascade;
+drop table if exists public.profiles cascade;
 
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
@@ -116,74 +28,173 @@ begin
 end;
 $$;
 
-drop trigger if exists touch_profiles_updated_at on public.profiles;
-create trigger touch_profiles_updated_at before update on public.profiles
-for each row execute function public.touch_updated_at();
-
-drop trigger if exists touch_question_sessions_updated_at on public.question_sessions;
-create trigger touch_question_sessions_updated_at before update on public.question_sessions
-for each row execute function public.touch_updated_at();
-
-drop trigger if exists touch_user_progress_updated_at on public.user_progress;
-create trigger touch_user_progress_updated_at before update on public.user_progress
-for each row execute function public.touch_updated_at();
-
 create or replace function public.is_admin()
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
-  );
+returns boolean language sql stable as $$
+  select coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin';
 $$;
 
-alter table public.profiles enable row level security;
-alter table public.question_sessions enable row level security;
-alter table public.answers enable row level security;
-alter table public.user_progress enable row level security;
-alter table public.modules enable row level security;
+create table public.users (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null unique,
+  display_name text,
+  avatar_config jsonb not null default '{}'::jsonb,
+  plan text not null default 'free' check (plan in ('free','plus')),
+  streak_count int not null default 0,
+  streak_last_date date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create trigger touch_users_updated_at before update on public.users
+for each row execute function public.touch_updated_at();
+
+create table public.sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  mode text not null check (mode in ('daily','full')),
+  module_id text,
+  scores jsonb not null default '{}'::jsonb,
+  questions_answered int not null default 0,
+  skips_used int not null default 0,
+  completed boolean not null default false,
+  started_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
+create index sessions_user_id_idx on public.sessions(user_id);
+create index sessions_started_at_idx on public.sessions(started_at);
+
+create table public.questions (
+  id uuid primary key default gen_random_uuid(),
+  module_id text not null,
+  module_title text not null,
+  order_index int not null,
+  prompt text not null,
+  help_text text,
+  question_type text not null check (question_type in ('likert','binary')),
+  binary_options jsonb,
+  scoring jsonb not null default '{}'::jsonb,
+  is_active boolean not null default true,
+  constraint questions_module_id_check check (module_id ~ '^m[1-8]$'),
+  constraint questions_order_index_check check (order_index between 1 and 8)
+);
+
+create index questions_module_id_idx on public.questions(module_id);
+create index questions_active_idx on public.questions(is_active);
+create unique index questions_module_order_unique on public.questions(module_id, order_index);
+
+create table public.responses (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references public.sessions(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete cascade,
+  question_id uuid references public.questions(id) on delete set null,
+  answer text not null,
+  score_delta jsonb not null default '{}'::jsonb,
+  answered_at timestamptz not null default now()
+);
+
+create index responses_session_id_idx on public.responses(session_id);
+create index responses_user_id_idx on public.responses(user_id);
+create index responses_question_id_idx on public.responses(question_id);
+create index responses_answered_at_idx on public.responses(answered_at);
+
+create table public.share_links (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  session_id uuid not null references public.sessions(id) on delete cascade,
+  token text not null unique default encode(gen_random_bytes(8), 'hex'),
+  scores_snapshot jsonb not null default '{}'::jsonb,
+  top_issues jsonb not null default '[]'::jsonb,
+  og_image_url text,
+  view_count int not null default 0,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz
+);
+
+create index share_links_user_id_idx on public.share_links(user_id);
+create index share_links_session_id_idx on public.share_links(session_id);
+create index share_links_token_idx on public.share_links(token);
+create index share_links_created_at_idx on public.share_links(created_at);
+
+create table public.subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null unique references public.users(id) on delete cascade,
+  stripe_customer_id text,
+  stripe_sub_id text,
+  plan text check (plan in ('monthly','yearly')),
+  status text not null default 'inactive'
+    check (status in ('active','cancelled','past_due','trialing','incomplete','inactive')),
+  current_period_end timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index subscriptions_user_id_idx on public.subscriptions(user_id);
+create index subscriptions_stripe_customer_id_idx on public.subscriptions(stripe_customer_id);
+create index subscriptions_stripe_sub_id_idx on public.subscriptions(stripe_sub_id);
+
+alter table public.users enable row level security;
+alter table public.sessions enable row level security;
+alter table public.responses enable row level security;
 alter table public.questions enable row level security;
-alter table public.scoring_rules enable row level security;
-alter table public.public_shares enable row level security;
+alter table public.share_links enable row level security;
+alter table public.subscriptions enable row level security;
 
-drop policy if exists "profiles own read" on public.profiles;
-create policy "profiles own read" on public.profiles for select using (auth.uid() = id or public.is_admin());
-drop policy if exists "profiles own insert" on public.profiles;
-create policy "profiles own insert" on public.profiles for insert with check (auth.uid() = id);
-drop policy if exists "profiles own update" on public.profiles;
-create policy "profiles own update" on public.profiles for update using (auth.uid() = id or public.is_admin()) with check (auth.uid() = id or public.is_admin());
+create policy "users own read" on public.users for select
+using (auth.uid() = id or public.is_admin());
+create policy "users own insert" on public.users for insert
+with check (auth.uid() = id or public.is_admin());
+create policy "users own update" on public.users for update
+using (auth.uid() = id or public.is_admin())
+with check (auth.uid() = id or public.is_admin());
 
-drop policy if exists "sessions own all" on public.question_sessions;
-create policy "sessions own all" on public.question_sessions for all using (auth.uid() = user_id or public.is_admin()) with check (auth.uid() = user_id or public.is_admin());
+create policy "sessions own read" on public.sessions for select
+using (auth.uid() = user_id or public.is_admin());
+create policy "sessions own insert" on public.sessions for insert
+with check (auth.uid() = user_id or public.is_admin());
+create policy "sessions own update" on public.sessions for update
+using (auth.uid() = user_id or public.is_admin())
+with check (auth.uid() = user_id or public.is_admin());
+create policy "sessions own delete" on public.sessions for delete
+using (auth.uid() = user_id or public.is_admin());
 
-drop policy if exists "answers own all" on public.answers;
-create policy "answers own all" on public.answers for all using (auth.uid() = user_id or public.is_admin()) with check (auth.uid() = user_id or public.is_admin());
+create policy "responses own read" on public.responses for select
+using (auth.uid() = user_id or public.is_admin());
+create policy "responses own insert" on public.responses for insert
+with check (auth.uid() = user_id or public.is_admin());
+create policy "responses own update" on public.responses for update
+using (auth.uid() = user_id or public.is_admin())
+with check (auth.uid() = user_id or public.is_admin());
+create policy "responses own delete" on public.responses for delete
+using (auth.uid() = user_id or public.is_admin());
 
-drop policy if exists "progress own all" on public.user_progress;
-create policy "progress own all" on public.user_progress for all using (auth.uid() = user_id or public.is_admin()) with check (auth.uid() = user_id or public.is_admin());
+create policy "questions public active read" on public.questions for select
+using (is_active = true or public.is_admin());
+create policy "questions admin insert" on public.questions for insert
+with check (public.is_admin());
+create policy "questions admin update" on public.questions for update
+using (public.is_admin())
+with check (public.is_admin());
+create policy "questions admin delete" on public.questions for delete
+using (public.is_admin());
 
-drop policy if exists "modules public read" on public.modules;
-create policy "modules public read" on public.modules for select using (is_published or public.is_admin());
-drop policy if exists "modules admin write" on public.modules;
-create policy "modules admin write" on public.modules for all using (public.is_admin()) with check (public.is_admin());
+create policy "share links public read" on public.share_links for select
+using (expires_at is null or expires_at > now());
+create policy "share links own insert" on public.share_links for insert
+with check (auth.uid() = user_id or public.is_admin());
+create policy "share links own update" on public.share_links for update
+using (auth.uid() = user_id or public.is_admin())
+with check (auth.uid() = user_id or public.is_admin());
+create policy "share links own delete" on public.share_links for delete
+using (auth.uid() = user_id or public.is_admin());
 
-drop policy if exists "questions public read" on public.questions;
-create policy "questions public read" on public.questions for select using (is_published or public.is_admin());
-drop policy if exists "questions admin write" on public.questions;
-create policy "questions admin write" on public.questions for all using (public.is_admin()) with check (public.is_admin());
+create policy "subscriptions own read" on public.subscriptions for select
+using (auth.uid() = user_id or public.is_admin());
+create policy "subscriptions admin insert" on public.subscriptions for insert
+with check (public.is_admin());
+create policy "subscriptions admin update" on public.subscriptions for update
+using (public.is_admin())
+with check (public.is_admin());
+create policy "subscriptions admin delete" on public.subscriptions for delete
+using (public.is_admin());
 
-drop policy if exists "scoring public read" on public.scoring_rules;
-create policy "scoring public read" on public.scoring_rules for select using (true);
-drop policy if exists "scoring admin write" on public.scoring_rules;
-create policy "scoring admin write" on public.scoring_rules for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "shares public active read" on public.public_shares;
-create policy "shares public active read" on public.public_shares for select using (is_active);
-drop policy if exists "shares own write" on public.public_shares;
-create policy "shares own write" on public.public_shares for all using (auth.uid() = user_id or public.is_admin()) with check (auth.uid() = user_id or public.is_admin());
-
-insert into public.modules (id,title,description,icon,sort_order,is_published) values
-('m1','Economy & Taxes','Taxation, wages, UBI, regulation','ti-coin',1,true),
-('m3','Healthcare','Insurance, access, safety net','ti-heart-rate-monitor',2,true),
-('m6','Immigration','Pathways, border, asylum','ti-world',3,true),
-('m7','Climate & Energy','Emissions, fossil fuels, green jobs','ti-leaf',4,true)
-on conflict (id) do update set title=excluded.title, description=excluded.description, icon=excluded.icon, sort_order=excluded.sort_order;
+commit;

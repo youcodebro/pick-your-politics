@@ -37,7 +37,7 @@ exports.handler = async (event) => {
     const price = plan === 'yearly' ? process.env.STRIPE_PRICE_YEARLY : process.env.STRIPE_PRICE_MONTHLY;
     if (!price) throw new Error(`Stripe ${plan} price id is missing.`);
 
-    const existing = await supabaseRest(`profiles?id=eq.${user.id}&select=stripe_customer_id,email`, {
+    const existing = await supabaseRest(`subscriptions?user_id=eq.${user.id}&select=stripe_customer_id`, {
       headers: { accept: 'application/json' }
     });
     let customerId = existing?.[0]?.stripe_customer_id;
@@ -48,10 +48,20 @@ exports.handler = async (event) => {
         'metadata[user_id]': user.id
       });
       customerId = customer.id;
-      await supabaseRest('profiles', {
+      await supabaseRest('users', {
         method: 'POST',
         headers: { prefer: 'resolution=merge-duplicates' },
-        body: JSON.stringify({ id: user.id, email: user.email, stripe_customer_id: customerId })
+        body: JSON.stringify({ id: user.id, email: user.email })
+      });
+      await supabaseRest('subscriptions?on_conflict=user_id', {
+        method: 'POST',
+        headers: { prefer: 'resolution=merge-duplicates' },
+        body: JSON.stringify({
+          user_id: user.id,
+          stripe_customer_id: customerId,
+          plan,
+          status: 'inactive'
+        })
       });
     }
 

@@ -7,7 +7,7 @@ exports.handler = async (event) => {
     const user = await getBearerUser(event);
     if (!user) return { statusCode: 401, body: JSON.stringify({ error: 'Sign in required.' }) };
 
-    const profile = await supabaseRest(`profiles?id=eq.${user.id}&select=stripe_customer_id`, {
+    const profile = await supabaseRest(`subscriptions?user_id=eq.${user.id}&select=stripe_customer_id`, {
       headers: { accept: 'application/json' }
     });
     const customer = profile?.[0]?.stripe_customer_id;

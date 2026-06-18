@@ -162,15 +162,17 @@ function normalizeParties(scores){
 }
 
 function loadSharedProfile(row){
-  const parties=normalizeParties(row.party_scores);
-  const issues=Object.entries(row.issue_scores||{}).slice(0,3).map(([cat,score])=>({cat,score:Number(score)||0}));
+  const parties=normalizeParties(row.scores_snapshot);
+  const issues=Array.isArray(row.top_issues)
+    ? row.top_issues.slice(0,3).map(issue=>({cat:issue.cat||issue.category||issue.name,score:Number(issue.score)||0}))
+    : Object.entries(row.top_issues||{}).slice(0,3).map(([cat,score])=>({cat,score:Number(score)||0}));
   PROFILES.backend={
-    name:row.display_name||'PYP friend',
-    seed:row.avatar_seed||row.display_name||'PYP',
+    name:'PYP friend',
+    seed:row.token||'PYP',
     skin:'d08b5b',
     hair:'724133',
-    q:row.answered_count||0,
-    mods:row.completed_modules||0,
+    q:0,
+    mods:0,
     parties:Object.keys(parties).length?parties:PROFILES.mixed.parties,
     issues:issues.length?issues:PROFILES.mixed.issues,
     insights:PROFILES.mixed.insights
@@ -188,9 +190,10 @@ async function loadShareToken(){
   try{
     const sb=await PYP.supabaseClient();
     if(!sb) return;
-    const {data,error}=await sb.from('public_shares').select('*').eq('token',token).eq('is_active',true).maybeSingle();
+    const {data,error}=await sb.from('share_links').select('*').eq('token',token).maybeSingle();
     if(error||!data) return;
     loadSharedProfile(data);
+    sb.from('share_links').update({view_count:(data.view_count||0)+1}).eq('id',data.id).then(()=>{});
   }catch(err){
     console.warn('Could not load shared profile token.',err);
   }

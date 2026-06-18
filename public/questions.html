@@ -577,6 +577,7 @@ function persistQuestionAnswer(val,q){
     answer_kind:kind,
     party_delta:partyDelta,
     party_scores:S.scores,
+    skips_used:3-S.skips,
     issue_scores:{}
   }).catch(err=>console.warn('Could not persist answer.',err));
 }

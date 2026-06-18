@@ -73,9 +73,9 @@
       id:user.id,
       email:user.email||null,
       display_name:meta.full_name||meta.name||user.email?.split('@')[0]||'PYP voter',
-      avatar_seed:meta.avatar_url||user.id
+      avatar_config:{seed:meta.avatar_url||user.id}
     };
-    await sb.from('profiles').upsert(profile,{onConflict:'id'});
+    await sb.from('users').upsert(profile,{onConflict:'id'});
     return profile;
   }
 
@@ -100,6 +100,7 @@
   }
 
   async function startSession({mode='daily',moduleId=null}={}){
+    mode=mode==='full'?'full':'daily';
     const sb=await supabaseClient();
     const user=await currentUser();
     const draft=localDraft();
@@ -112,13 +113,11 @@
     if(draft.session_id&&!draft.local){
       return {id:draft.session_id,local:false};
     }
-    const {data,error}=await sb.from('question_sessions').insert({
+    const {data,error}=await sb.from('sessions').insert({
       user_id:user.id,
       mode,
-      status:'in_progress',
       module_id:moduleId,
-      party_scores:clone(SCORE_ZERO),
-      issue_scores:{}
+      scores:clone(SCORE_ZERO)
     }).select('id').single();
     if(error) throw error;
     setLocalDraft({session_id:data.id,local:false,mode,module_id:moduleId,status:'in_progress'});
@@ -142,36 +141,21 @@
     if(session.local) return {local:true};
     const sb=await supabaseClient();
     const user=await currentUser();
-    const {error}=await sb.from('answers').upsert({
+    const {error}=await sb.from('responses').insert({
       user_id:user.id,
       session_id:session.id,
-      module_id:payload.module_id,
-      question_index:payload.question_index,
-      question_prompt:payload.question_prompt,
-      answer_value:payload.answer_value,
-      answer_kind:payload.answer_kind,
-      party_delta:payload.party_delta||{},
-      party_scores:payload.party_scores||{},
-      issue_scores:payload.issue_scores||{},
+      question_id:payload.question_id||null,
+      answer:payload.answer_value,
+      score_delta:payload.party_delta||{},
       answered_at:answer.answered_at
-    },{onConflict:'session_id,module_id,question_index'});
+    });
     if(error) throw error;
-    await sb.from('question_sessions').update({
+    await sb.from('sessions').update({
       module_id:payload.module_id,
-      current_question_index:payload.next_question_index ?? payload.question_index,
-      party_scores:payload.party_scores||{},
-      issue_scores:payload.issue_scores||{},
-      updated_at:nowIso()
+      scores:payload.party_scores||{},
+      questions_answered:(payload.next_question_index ?? payload.question_index)+1,
+      skips_used:payload.skips_used||0
     }).eq('id',session.id);
-    await sb.from('user_progress').upsert({
-      user_id:user.id,
-      current_session_id:session.id,
-      current_module_id:payload.module_id,
-      current_question_index:payload.next_question_index ?? payload.question_index,
-      party_scores:payload.party_scores||{},
-      issue_scores:payload.issue_scores||{},
-      last_activity_at:nowIso()
-    },{onConflict:'user_id'});
     return {local:false};
   }
 
@@ -187,23 +171,16 @@
     if(session.local) return {local:true};
     const sb=await supabaseClient();
     const user=await currentUser();
-    const {data:progress}=await sb.from('user_progress').select('completed_modules,streak_count,last_activity_at').eq('user_id',user.id).maybeSingle();
-    const completed=Array.from(new Set([...(progress?.completed_modules||[]),moduleId]));
-    await sb.from('user_progress').upsert({
-      user_id:user.id,
-      current_session_id:session.id,
-      current_module_id:moduleId,
-      completed_modules:completed,
-      party_scores:partyScores||{},
-      issue_scores:issueScores||{},
-      last_activity_at:nowIso(),
-      streak_count:Math.max(1,progress?.streak_count||1)
-    },{onConflict:'user_id'});
-    await sb.from('question_sessions').update({
-      status:'module_complete',
+    const {data:profile}=await sb.from('users').select('streak_count,streak_last_date').eq('id',user.id).maybeSingle();
+    const today=new Date().toISOString().slice(0,10);
+    await sb.from('users').update({
+      streak_count:Math.max(1,profile?.streak_count||1),
+      streak_last_date:today
+    }).eq('id',user.id);
+    await sb.from('sessions').update({
+      completed:true,
       module_id:moduleId,
-      party_scores:partyScores||{},
-      issue_scores:issueScores||{},
+      scores:partyScores||{},
       completed_at:nowIso()
     }).eq('id',session.id);
     return {local:false,moduleTitle};
@@ -213,21 +190,34 @@
     const sb=await supabaseClient();
     const user=await currentUser();
     if(!sb||!user) return localDraft();
-    const {data}=await sb.from('user_progress').select('*').eq('user_id',user.id).maybeSingle();
-    return data||localDraft();
+    const {data}=await sb.from('sessions')
+      .select('*')
+      .eq('user_id',user.id)
+      .order('started_at',{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(!data) return localDraft();
+    return {
+      ...localDraft(),
+      current_session_id:data.id,
+      current_module_id:data.module_id,
+      current_question_index:Math.max(0,(data.questions_answered||0)-1),
+      party_scores:data.scores||{}
+    };
   }
 
   async function loadProfile(){
     const sb=await supabaseClient();
     const user=await currentUser();
     if(!sb||!user) return null;
-    const {data,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+    const {data,error}=await sb.from('users').select('*,subscriptions(*)').eq('id',user.id).maybeSingle();
     if(error) throw error;
     return data;
   }
 
   function hasActiveSubscription(profile){
-    return ['active','trialing'].includes(profile?.subscription_status);
+    const sub=Array.isArray(profile?.subscriptions)?profile.subscriptions[0]:profile?.subscriptions;
+    return profile?.plan==='plus'||['active','trialing'].includes(sub?.status);
   }
 
   async function createCheckoutSession(plan='monthly'){
@@ -261,7 +251,8 @@
   async function adminList(table){
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
-    return sb.from(table).select('*').order('created_at',{ascending:false});
+    if(table==='questions') return sb.from(table).select('*').order('module_id').order('order_index');
+    return sb.from(table).select('*');
   }
   async function adminUpsert(table,row){
     const sb=await supabaseClient();
@@ -272,6 +263,20 @@
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
     return sb.from(table).delete().eq('id',id);
+  }
+  async function adminUpdateWhere(table,match,row){
+    const sb=await supabaseClient();
+    if(!sb) throw new Error('Supabase is not configured.');
+    let query=sb.from(table).update(row);
+    Object.entries(match).forEach(([key,value])=>{query=query.eq(key,value);});
+    return query;
+  }
+  async function adminDeleteWhere(table,match){
+    const sb=await supabaseClient();
+    if(!sb) throw new Error('Supabase is not configured.');
+    let query=sb.from(table).delete();
+    Object.entries(match).forEach(([key,value])=>{query=query.eq(key,value);});
+    return query;
   }
 
   async function initAuthUI(){
@@ -306,6 +311,8 @@
     adminList,
     adminUpsert,
     adminDelete,
+    adminUpdateWhere,
+    adminDeleteWhere,
     initAuthUI,
     localDraft,
     setLocalDraft
