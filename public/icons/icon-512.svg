@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0d0d0f"/>
+  <circle cx="368" cy="128" r="76" fill="#185FA5" opacity=".85"/>
+  <circle cx="410" cy="190" r="66" fill="#A32D2D" opacity=".8"/>
+  <text x="78" y="300" fill="#fff" font-family="Arial, sans-serif" font-size="138" font-weight="800">PY</text>
+  <text x="286" y="300" fill="#378ADD" font-family="Arial, sans-serif" font-size="138" font-weight="800">P</text>
+  <rect x="82" y="354" width="348" height="32" rx="16" fill="#262633"/>
+  <rect x="82" y="354" width="152" height="32" rx="16" fill="#185FA5"/>
+  <rect x="234" y="354" width="110" height="32" fill="#A32D2D"/>
+  <rect x="344" y="354" width="86" height="32" rx="16" fill="#BA7517"/>
+</svg>

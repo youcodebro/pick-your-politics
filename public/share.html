@@ -4,7 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PYP — Jordan's Political Profile</title>
+<meta property="og:title" content="PYP Political Profile"/>
+<meta property="og:description" content="See how your views compare on Pick Your Politics."/>
+<meta property="og:image" content="/.netlify/functions/og-image?name=Jordan&amp;top=Pragmatic%20Democrat"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#185FA5"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;color:#fff;background:#0d0d0f;min-height:100vh}
@@ -121,6 +126,9 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#fff;background:#0d0d0
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/pyp-core.js"></script>
+<script src="/js/pyp-pwa.js"></script>
 <script>
 const BASE='https://api.dicebear.com/9.x/avataaars/svg';
 const PC={Democrat:{c:'#185FA5',bg:'rgba(24,95,165,.2)',t:'#85B7EB',b:'rgba(24,95,165,.35)'},Republican:{c:'#A32D2D',bg:'rgba(163,45,45,.2)',t:'#F09595',b:'rgba(226,75,74,.35)'},Libertarian:{c:'#BA7517',bg:'rgba(186,117,23,.2)',t:'#FAC775',b:'rgba(239,159,39,.35)'},Green:{c:'#3B6D11',bg:'rgba(59,109,17,.2)',t:'#97C459',b:'rgba(99,153,34,.35)'},Independent:{c:'#534AB7',bg:'rgba(83,74,183,.2)',t:'#AFA9EC',b:'rgba(127,119,221,.35)'}};
@@ -132,7 +140,7 @@ const PROFILES={
 };
 function load(key){
   document.querySelectorAll('.ps-chip').forEach(c=>c.classList.remove('on'));
-  document.getElementById('ps-'+key).classList.add('on');
+  document.getElementById('ps-'+key)?.classList.add('on');
   const p=PROFILES[key];
   document.getElementById('hero-name').textContent=p.name;
   document.getElementById('hero-display-name').textContent=p.name;
@@ -147,7 +155,48 @@ function load(key){
   document.getElementById('share-issues').innerHTML=p.issues.map(issue=>{const abs=Math.abs(issue.score),pos=issue.score>0,cls=abs<10?'neu':pos?'pos':'neg',txt=abs<10?'Neutral':pos?`Progressive +${abs}`:`Conservative −${abs}`;return`<div class="issue-row"><span class="issue-name">${issue.cat}</span><div class="issue-track"><div class="issue-fill" style="${pos?'left:50%':'right:50%'};width:${Math.min(36,abs/2.8)}px;background:${pos?'#378ADD':'#E24B4A'}"></div></div><span class="issue-badge ${cls}">${txt}</span></div>`;}).join('');
   document.getElementById('blur-content').innerHTML=p.insights.map(ins=>`<div class="insight-row"><span class="insight-lbl">${ins.l}</span><span class="insight-val">${ins.v}</span></div>`).join('');
 }
+
+function normalizeParties(scores){
+  const map={D:'Democrat',R:'Republican',L:'Libertarian',G:'Green',I:'Independent'};
+  return Object.fromEntries(Object.entries(scores||{}).map(([k,v])=>[map[k]||k,Number(v)||0]));
+}
+
+function loadSharedProfile(row){
+  const parties=normalizeParties(row.party_scores);
+  const issues=Object.entries(row.issue_scores||{}).slice(0,3).map(([cat,score])=>({cat,score:Number(score)||0}));
+  PROFILES.backend={
+    name:row.display_name||'PYP friend',
+    seed:row.avatar_seed||row.display_name||'PYP',
+    skin:'d08b5b',
+    hair:'724133',
+    q:row.answered_count||0,
+    mods:row.completed_modules||0,
+    parties:Object.keys(parties).length?parties:PROFILES.mixed.parties,
+    issues:issues.length?issues:PROFILES.mixed.issues,
+    insights:PROFILES.mixed.insights
+  };
+  load('backend');
+  const chip=document.getElementById('ps-backend')||document.createElement('button');
+  chip.id='ps-backend';
+  chip.className='ps-chip on';
+  chip.textContent=`${PROFILES.backend.name} (shared)`;
+}
+
+async function loadShareToken(){
+  const token=new URLSearchParams(location.search).get('token');
+  if(!token||!window.PYP) return;
+  try{
+    const sb=await PYP.supabaseClient();
+    if(!sb) return;
+    const {data,error}=await sb.from('public_shares').select('*').eq('token',token).eq('is_active',true).maybeSingle();
+    if(error||!data) return;
+    loadSharedProfile(data);
+  }catch(err){
+    console.warn('Could not load shared profile token.',err);
+  }
+}
 load('mixed');
+loadShareToken();
 </script>
 </body>
 </html>

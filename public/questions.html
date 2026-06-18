@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PYP — Question Screen</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#185FA5"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 
@@ -457,6 +459,9 @@ img,svg,canvas,.progress-fill,.pw-seg,.opt-indicator{transition:none!important}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/pyp-core.js"></script>
+<script src="/js/pyp-pwa.js"></script>
 <script>
 /* ─── THEME ─── */
 function toggleTheme(){
@@ -531,6 +536,60 @@ let S={
   widgetOpen:true,
   busy:false
 };
+
+const PYP_MODE=new URLSearchParams(location.search).get('mode')||'daily';
+
+async function initQuestionBackend(){
+  if(!window.PYP) return;
+  try{
+    await PYP.initAuthUI();
+    const progress=await PYP.loadProgress();
+    if(progress?.party_scores&&Object.keys(progress.party_scores).length){
+      S.scores={...S.scores,...progress.party_scores};
+    }
+    if(progress?.current_module_id){
+      const idx=MODS.findIndex(m=>m.id===progress.current_module_id);
+      if(idx>=0) S.modIdx=idx;
+    }
+    if(Number.isInteger(progress?.current_question_index)){
+      const max=(MODS[S.modIdx]?.questions.length||1)-1;
+      S.qIdx=Math.max(0,Math.min(progress.current_question_index,max));
+    }
+    await PYP.startSession({mode:PYP_MODE,moduleId:MODS[S.modIdx].id});
+    renderAll();
+  }catch(err){
+    console.warn('PYP backend unavailable; using local draft.',err);
+  }
+}
+
+function persistQuestionAnswer(val,q){
+  if(!window.PYP) return;
+  const kind=val==='__skip__'?'skip':val==='__not_sure__'?'not_sure':'answer';
+  const partyDelta=kind==='answer'?(q.sc?.[val]||{}):{};
+  PYP.saveAnswer({
+    mode:PYP_MODE,
+    module_id:MODS[S.modIdx].id,
+    module_title:MODS[S.modIdx].title,
+    question_index:S.qIdx,
+    next_question_index:Math.min(S.qIdx+1,MODS[S.modIdx].questions.length-1),
+    question_prompt:q.p,
+    answer_value:val,
+    answer_kind:kind,
+    party_delta:partyDelta,
+    party_scores:S.scores,
+    issue_scores:{}
+  }).catch(err=>console.warn('Could not persist answer.',err));
+}
+
+function persistModuleComplete(){
+  if(!window.PYP) return;
+  PYP.completeModule({
+    moduleId:MODS[S.modIdx].id,
+    moduleTitle:MODS[S.modIdx].title,
+    partyScores:S.scores,
+    issueScores:{}
+  }).catch(err=>console.warn('Could not persist module completion.',err));
+}
 
 /* ─── THEME ─── */
 function toggleTheme(){
@@ -724,6 +783,8 @@ function answer(val){
     updateAvatarColors();
   }
 
+  persistQuestionAnswer(val,q);
+
   S.busy=true;
   const delay=val==='__skip__'||val==='__not_sure__'?0:340;
   setTimeout(()=>advance(),delay);
@@ -763,6 +824,7 @@ function advance(){
 
 /* ─── MODULE COMPLETE ─── */
 function showComplete(){
+  persistModuleComplete();
   const wrap=document.getElementById('q-slide-wrap');
   if(!wrap) return;
   wrap.innerHTML=`
@@ -778,7 +840,7 @@ function showComplete(){
         <button class="complete-btn" onclick="nextMod()">
           <i class="ti ti-arrow-right" style="font-size:13px"></i> Next module
         </button>
-        <button class="complete-btn-outline" onclick="window.location.href='app.html'">
+        <button class="complete-btn-outline" onclick="window.location.href='app.html#results'">
           View results so far
         </button>
       </div>
@@ -793,7 +855,7 @@ function nextMod(){
     renderAll();
     buildDrawer();
   } else {
-    window.location.href='app.html';
+    window.location.href='app.html#results';
   }
 }
 
@@ -826,6 +888,7 @@ function renderAll(){
 
 renderAll();
 buildDrawer();
+initQuestionBackend();
 
 /* ─── MODULE DRAWER ─── */
 function openModDrawer(){

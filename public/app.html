@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PYP — All Screens</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#185FA5"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 [data-theme="light"]{
@@ -466,7 +468,7 @@ img,svg{transition:none}
         <span class="pill" style="background:#FAEEDA;color:#633806;border:1px solid rgba(186,117,23,.2)"><span class="pill-dot" style="background:#BA7517"></span>Libertarian 22%</span>
       </div>
 
-      <button class="auth-google">
+      <button class="auth-google" id="auth-google-btn">
         <svg class="google-g" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Continue with Google
       </button>
@@ -477,8 +479,8 @@ img,svg{transition:none}
         <div class="auth-divider-line"></div>
       </div>
 
-      <input class="auth-field" type="email" placeholder="you@example.com"/>
-      <button class="btn-primary full" style="margin-bottom:.25rem">Send magic link</button>
+      <input class="auth-field" id="auth-email" type="email" placeholder="you@example.com"/>
+      <button class="btn-primary full" id="auth-magic-btn" style="margin-bottom:.25rem">Send magic link</button>
 
       <div class="gate-skip"><button onclick="show('results')">Skip for now — view results anyway</button></div>
       <p class="gate-tos">By continuing you agree to our Terms and Privacy Policy.</p>
@@ -653,7 +655,7 @@ img,svg{transition:none}
           <div class="pricing-feat"><i class="ti ti-check yes"></i>High-res share cards + OG images</div>
           <div class="pricing-feat"><i class="ti ti-check yes"></i>Priority access to new features</div>
         </div>
-        <button class="pricing-btn primary" onclick="show('dashboard')">Upgrade to PYP+ →</button>
+        <button class="pricing-btn primary" onclick="startUpgradeCheckout()">Upgrade to PYP+ →</button>
       </div>
     </div>
 
@@ -1008,6 +1010,9 @@ img,svg{transition:none}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/pyp-core.js"></script>
+<script src="/js/pyp-pwa.js"></script>
 <script>
 /* ── THEME ── */
 function toggleTheme(){
@@ -1047,6 +1052,7 @@ show(location.hash.slice(1)||'login-gate');
 
 /* ── PRICING TOGGLE ── */
 function setPricing(mode){
+  window.PYP_BILLING_MODE=mode;
   document.getElementById('ptog-mo').classList.toggle('on',mode==='monthly');
   document.getElementById('ptog-yr').classList.toggle('on',mode==='yearly');
   const priceEl=document.getElementById('price-display');
@@ -1072,6 +1078,141 @@ function showAdmin(key){
     item.classList.toggle('on',item.getAttribute('onclick')===`showAdmin('${key}')`);
   });
 }
+
+async function startUpgradeCheckout(){
+  try{
+    const user=await PYP.currentUser();
+    if(!user){
+      show('login-gate');
+      const email=document.getElementById('auth-email');
+      if(email) email.focus();
+      return;
+    }
+    await PYP.createCheckoutSession(window.PYP_BILLING_MODE||'monthly');
+  }catch(err){
+    alert(err.message||'Could not start checkout.');
+  }
+}
+
+async function initBackendUI(){
+  const google=document.getElementById('auth-google-btn');
+  const magic=document.getElementById('auth-magic-btn');
+  const email=document.getElementById('auth-email');
+
+  google?.addEventListener('click',async()=>{
+    try{await PYP.signInWithGoogle();}
+    catch(err){alert(err.message||'Google sign-in is not configured yet.');}
+  });
+
+  magic?.addEventListener('click',async()=>{
+    try{
+      const value=email?.value?.trim();
+      if(!value){email?.focus();return;}
+      await PYP.sendMagicLink(value);
+      magic.textContent='Magic link sent';
+      magic.disabled=true;
+    }catch(err){
+      alert(err.message||'Magic link sign-in is not configured yet.');
+    }
+  });
+
+  const user=await PYP.initAuthUI();
+  if(user){
+    const gateSub=document.querySelector('.gate-sub');
+    if(gateSub) gateSub.textContent=`Signed in as ${user.email}. Your profile can now sync across devices.`;
+    initAdminCrud();
+    hydrateBackendPanels().catch(()=>{});
+  }
+}
+
+async function hydrateBackendPanels(){
+  const [profile,progress]=await Promise.all([
+    PYP.loadProfile().catch(()=>null),
+    PYP.loadProgress().catch(()=>null)
+  ]);
+
+  if(progress?.party_scores&&Object.keys(progress.party_scores).length){
+    const scores=progress.party_scores;
+    const total=Object.values(scores).reduce((sum,v)=>sum+Math.max(0,Number(v)||0),0)||1;
+    const names={D:'Democrat',R:'Republican',L:'Libertarian',G:'Green',I:'Independent'};
+    document.querySelectorAll('.results-party-row').forEach(row=>{
+      const label=row.querySelector('span')?.textContent?.trim();
+      const key=Object.entries(names).find(([,name])=>name===label)?.[0];
+      if(!key) return;
+      const pct=Math.round(Math.max(0,Number(scores[key])||0)/total*100);
+      const fill=row.querySelector('.results-party-fill');
+      const strong=row.querySelector('strong');
+      if(fill) fill.style.width=pct+'%';
+      if(strong) strong.textContent=pct+'%';
+    });
+  }
+
+  const isPaid=PYP.hasActiveSubscription(profile);
+  document.querySelectorAll('.dash-badge').forEach(badge=>{
+    badge.innerHTML=isPaid?'<i class="ti ti-star" style="font-size:11px"></i> PYP+':'Free';
+  });
+  document.querySelectorAll('.locked-overlay').forEach(overlay=>{
+    overlay.style.display=isPaid?'none':'flex';
+  });
+
+  hydrateAdminModules().catch(()=>{});
+}
+
+async function hydrateAdminModules(){
+  const result=await PYP.adminList('modules');
+  if(result.error||!result.data?.length) return;
+  const tbody=document.querySelector('#admin-modules tbody');
+  if(!tbody) return;
+  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  tbody.innerHTML=result.data.map(mod=>`
+    <tr>
+      <td>${esc(mod.title)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="admin-status ${mod.is_published?'pub':'draft'}">${mod.is_published?'Published':'Draft'}</span></td>
+      <td class="admin-actions">
+        <button class="admin-icon-btn" title="Edit module" data-admin-action="edit-module" data-module-id="${esc(mod.id)}" data-module-title="${esc(mod.title)}"><i class="ti ti-edit"></i></button>
+        <button class="admin-icon-btn" title="Delete module" data-admin-action="delete-module" data-module-id="${esc(mod.id)}"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-admin-action="edit-module"]').forEach(btn=>{
+    btn.addEventListener('click',()=>adminEditModule(btn.dataset.moduleId,btn.dataset.moduleTitle));
+  });
+  tbody.querySelectorAll('[data-admin-action="delete-module"]').forEach(btn=>{
+    btn.addEventListener('click',()=>adminDeleteModule(btn.dataset.moduleId));
+  });
+}
+
+function initAdminCrud(){
+  const newModuleBtn=document.querySelector('#admin-modules .admin-new-btn');
+  if(newModuleBtn) newModuleBtn.onclick=adminCreateModule;
+}
+
+async function adminCreateModule(){
+  const title=prompt('Module title');
+  if(!title) return;
+  const id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')||crypto.randomUUID();
+  const description=prompt('Module description')||'';
+  const result=await PYP.adminUpsert('modules',{id,title,description,icon:'ti-list',is_published:false});
+  if(result.error) return alert(result.error.message||'Could not create module.');
+  hydrateAdminModules();
+}
+
+async function adminEditModule(id,currentTitle){
+  const title=prompt('Module title',currentTitle);
+  if(!title) return;
+  const result=await PYP.adminUpsert('modules',{id,title});
+  if(result.error) return alert(result.error.message||'Could not update module.');
+  hydrateAdminModules();
+}
+
+async function adminDeleteModule(id){
+  if(!confirm('Delete this module? Questions attached to it will also be deleted in Supabase.')) return;
+  const result=await PYP.adminDelete('modules',id);
+  if(result.error) return alert(result.error.message||'Could not delete module.');
+  hydrateAdminModules();
+}
+initBackendUI();
 </script>
 </body>
 </html>
