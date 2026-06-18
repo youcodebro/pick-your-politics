@@ -161,6 +161,27 @@ img,svg{transition:none}
 .mod-chip.done{background:var(--green-bg);color:var(--green);border-color:rgba(59,109,17,.25)}
 .mod-chip.active{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(24,95,165,.25);font-weight:600}
 
+.results-hero{display:grid;grid-template-columns:260px 1fr;gap:1rem;align-items:center;margin-bottom:1rem}
+.results-donut-card{text-align:center}
+.results-donut{width:176px;height:176px;margin:0 auto .875rem;display:block}
+.results-avatar{width:82px;height:82px;border-radius:50%;border:3px solid var(--blue-mid);background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto .75rem}
+.results-avatar svg{width:68px;height:68px}
+.results-party-list{display:flex;flex-direction:column;gap:.5rem}
+.results-party-row{display:grid;grid-template-columns:96px 1fr 36px;align-items:center;gap:.625rem;font-size:12px;color:var(--text2)}
+.results-party-track{height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.results-party-fill{height:100%;border-radius:99px}
+.issue-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.issue-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.75rem}
+.issue-top{display:flex;justify-content:space-between;gap:.75rem;font-size:12px;font-weight:600;color:var(--text);margin-bottom:.5rem}
+.issue-score{font-size:11px;font-weight:700;white-space:nowrap}
+.issue-track{height:7px;background:linear-gradient(90deg,var(--red) 0 50%,var(--blue-mid) 50% 100%);border-radius:99px;position:relative}
+.issue-pin{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface);transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.insight-strip{display:flex;gap:.75rem;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.25rem}
+.insight-card{min-width:220px;scroll-snap-align:start;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem}
+.insight-icon{width:34px;height:34px;border-radius:9px;background:var(--blue-bg);color:var(--blue-mid);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:.75rem}
+.insight-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.35rem}
+.insight-copy{font-size:12px;color:var(--text2);line-height:1.5}
+
 /* ════════════════════════════════════
    3. PYP+ UPGRADE
    ════════════════════════════════════ */
@@ -338,7 +359,7 @@ img,svg{transition:none}
 
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
-  .pricing-grid,.upgrade-feats-grid,.dash-grid,.admin-stat-grid{grid-template-columns:1fr}
+  .pricing-grid,.upgrade-feats-grid,.dash-grid,.admin-stat-grid,.results-hero,.issue-grid{grid-template-columns:1fr}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
   .admin-layout{grid-template-columns:1fr}
   .admin-sidebar{display:none}
@@ -364,13 +385,15 @@ img,svg{transition:none}
 
 <!-- SCREEN NAV -->
 <div class="screen-nav">
-  <a href="index.html" style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:4px;padding:.3rem .75rem;text-decoration:none;flex-shrink:0"><i class="ti ti-arrow-left" style="font-size:13px"></i> Home</a>
-  <button class="snav-btn on" onclick="show('login-gate')">1. Login gate</button>
-  <button class="snav-btn" onclick="show('module-complete')">2. Module complete</button>
-  <button class="snav-btn" onclick="show('upgrade')">3. PYP+ upgrade</button>
-  <button class="snav-btn" onclick="show('dashboard')">4. PYP+ dashboard</button>
-  <button class="snav-btn" onclick="show('public-share')">5. Public share page</button>
-  <button class="snav-btn" onclick="show('admin')">6. Admin panel</button>
+  <a href="index.html" class="snav-btn">1. Landing page</a>
+  <a href="questions.html" class="snav-btn">2. Question screen</a>
+  <button class="snav-btn on" data-panel="login-gate" onclick="show('login-gate')">3. Login gate</button>
+  <button class="snav-btn" data-panel="module-complete" onclick="show('module-complete')">4. Module complete</button>
+  <button class="snav-btn" data-panel="results" onclick="show('results')">5. Results / Insights</button>
+  <button class="snav-btn" data-panel="upgrade" onclick="show('upgrade')">6. PYP+ upgrade</button>
+  <button class="snav-btn" data-panel="dashboard" onclick="show('dashboard')">7. PYP+ dashboard</button>
+  <button class="snav-btn" data-panel="public-share" onclick="show('public-share')">8. Public share page</button>
+  <button class="snav-btn" data-panel="admin" onclick="show('admin')">9. Admin panel</button>
 </div>
 
 <!-- ══════════════════════════════════
@@ -457,7 +480,7 @@ img,svg{transition:none}
       <input class="auth-field" type="email" placeholder="you@example.com"/>
       <button class="btn-primary full" style="margin-bottom:.25rem">Send magic link</button>
 
-      <div class="gate-skip"><button onclick="show('dashboard')">Skip for now — view results anyway</button></div>
+      <div class="gate-skip"><button onclick="show('results')">Skip for now — view results anyway</button></div>
       <p class="gate-tos">By continuing you agree to our Terms and Privacy Policy.</p>
     </div>
   </div>
@@ -501,7 +524,7 @@ img,svg{transition:none}
 
       <div class="complete-actions">
         <button class="complete-btn" onclick="show('upgrade')"><i class="ti ti-arrow-right" style="font-size:13px"></i> Continue to upgrade →</button>
-        <button class="complete-btn-outline" onclick="show('dashboard')">View my dashboard</button>
+        <button class="complete-btn-outline" onclick="show('results')">View my results</button>
       </div>
     </div>
   </div>
@@ -510,6 +533,83 @@ img,svg{transition:none}
 <!-- ══════════════════════════════════
      3. PYP+ UPGRADE
      ══════════════════════════════════ -->
+<!-- RESULTS / INSIGHTS -->
+<div id="page-results" class="page">
+  <div class="wrap-wide">
+    <div class="dash-header">
+      <div class="dash-welcome">Your political profile</div>
+      <div class="dash-sub">64-question full run · 8 modules · refreshed just now</div>
+    </div>
+
+    <div class="results-hero">
+      <div class="card results-donut-card">
+        <div class="results-avatar">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" fill="#C68642"/>
+            <ellipse cx="40" cy="18" rx="22" ry="14" fill="#5C4033"/>
+            <circle cx="33" cy="38" r="3" fill="#7a4f2a"/>
+            <circle cx="47" cy="38" r="3" fill="#7a4f2a"/>
+            <path d="M33 50 Q40 56 47 50" stroke="#7a4f2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M18 72 Q18 62 40 62 Q62 62 62 72" fill="#185FA5"/>
+          </svg>
+        </div>
+        <svg class="results-donut" viewBox="0 0 42 42" aria-label="Party mix donut">
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--track)" stroke-width="6"/>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#185FA5" stroke-width="6" stroke-dasharray="38 62" stroke-dashoffset="25"/>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#A32D2D" stroke-width="6" stroke-dasharray="24 76" stroke-dashoffset="-13"/>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#BA7517" stroke-width="6" stroke-dasharray="22 78" stroke-dashoffset="-37"/>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3B6D11" stroke-width="6" stroke-dasharray="11 89" stroke-dashoffset="-59"/>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#534AB7" stroke-width="6" stroke-dasharray="5 95" stroke-dashoffset="-70"/>
+          <text x="21" y="20" text-anchor="middle" font-size="5" font-weight="700" fill="var(--text)" font-family="system-ui">38%</text>
+          <text x="21" y="25" text-anchor="middle" font-size="3" fill="var(--text3)" font-family="system-ui">Top party</text>
+        </svg>
+        <div class="section-title" style="font-size:18px;margin-bottom:.25rem">Pragmatic Democrat</div>
+        <div class="section-sub" style="font-size:12px;margin-bottom:0">Progressive on economics and climate, more mixed on institutions and foreign policy.</div>
+      </div>
+
+      <div class="card">
+        <div class="section-eyebrow">Party Mix</div>
+        <div class="section-title">A blended profile, not a box</div>
+        <div class="results-party-list">
+          <div class="results-party-row"><span>Democrat</span><div class="results-party-track"><div class="results-party-fill" style="width:38%;background:#185FA5"></div></div><strong>38%</strong></div>
+          <div class="results-party-row"><span>Republican</span><div class="results-party-track"><div class="results-party-fill" style="width:24%;background:#A32D2D"></div></div><strong>24%</strong></div>
+          <div class="results-party-row"><span>Libertarian</span><div class="results-party-track"><div class="results-party-fill" style="width:22%;background:#BA7517"></div></div><strong>22%</strong></div>
+          <div class="results-party-row"><span>Green</span><div class="results-party-track"><div class="results-party-fill" style="width:11%;background:#3B6D11"></div></div><strong>11%</strong></div>
+          <div class="results-party-row"><span>Independent</span><div class="results-party-track"><div class="results-party-fill" style="width:5%;background:#534AB7"></div></div><strong>5%</strong></div>
+        </div>
+        <div class="divider"></div>
+        <button class="btn-primary" onclick="show('public-share')"><i class="ti ti-share" style="font-size:14px"></i> Share profile</button>
+        <button class="btn-outline" onclick="show('upgrade')" style="margin-left:.5rem"><i class="ti ti-star" style="font-size:14px"></i> Unlock trends</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-eyebrow">Issues</div>
+      <div class="section-title">Issue-by-issue breakdown</div>
+      <div class="issue-grid">
+        <div class="issue-card"><div class="issue-top"><span>Economy/Taxes</span><span class="issue-score dem-c">+62</span></div><div class="issue-track"><span class="issue-pin" style="left:81%;background:#185FA5"></span></div></div>
+        <div class="issue-card"><div class="issue-top"><span>Climate/Energy</span><span class="issue-score dem-c">+55</span></div><div class="issue-track"><span class="issue-pin" style="left:77.5%;background:#185FA5"></span></div></div>
+        <div class="issue-card"><div class="issue-top"><span>Healthcare</span><span class="issue-score dem-c">+48</span></div><div class="issue-track"><span class="issue-pin" style="left:74%;background:#185FA5"></span></div></div>
+        <div class="issue-card"><div class="issue-top"><span>Immigration</span><span class="issue-score rep-c">-41</span></div><div class="issue-track"><span class="issue-pin" style="left:29.5%;background:#A32D2D"></span></div></div>
+        <div class="issue-card"><div class="issue-top"><span>Education &amp; Family</span><span class="issue-score dem-c">+35</span></div><div class="issue-track"><span class="issue-pin" style="left:67.5%;background:#185FA5"></span></div></div>
+        <div class="issue-card"><div class="issue-top"><span>Foreign Policy</span><span class="issue-score rep-c">-28</span></div><div class="issue-track"><span class="issue-pin" style="left:36%;background:#A32D2D"></span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-eyebrow">Insights</div>
+      <div class="section-title">Swipeable insight cards</div>
+      <div class="insight-strip">
+        <div class="insight-card"><div class="insight-icon"><i class="ti ti-scale"></i></div><div class="insight-title">Your strongest axis</div><div class="insight-copy">Economic fairness is the clearest driver in your answers.</div></div>
+        <div class="insight-card"><div class="insight-icon"><i class="ti ti-bolt"></i></div><div class="insight-title">Cross-party signal</div><div class="insight-copy">You overlap with Libertarians on privacy and regulatory skepticism.</div></div>
+        <div class="insight-card"><div class="insight-icon"><i class="ti ti-leaf"></i></div><div class="insight-title">Climate priority</div><div class="insight-copy">Your climate answers are more progressive than your overall mix.</div></div>
+        <div class="insight-card"><div class="insight-icon"><i class="ti ti-target"></i></div><div class="insight-title">Consistency</div><div class="insight-copy">You answered with high consistency across related policy questions.</div></div>
+        <div class="insight-card"><div class="insight-icon"><i class="ti ti-lock"></i></div><div class="insight-title">More with PYP+</div><div class="insight-copy">Unlock retake history and trend charts to see how this changes over time.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="page-upgrade" class="page">
   <div class="upgrade-hero">
     <div class="upgrade-badge">PYP+</div>
@@ -922,23 +1022,28 @@ function toggleTheme(){
 const PAGES={
   'login-gate':'page-login-gate',
   'module-complete':'page-module-complete',
+  'results':'page-results',
   'upgrade':'page-upgrade',
   'dashboard':'page-dashboard',
   'public-share':'page-public-share',
   'admin':'page-admin'
 };
 function show(key){
+  if(!PAGES[key]) key='login-gate';
   Object.values(PAGES).forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });
   const target=document.getElementById(PAGES[key]);
   if(target) target.classList.add('active');
-  document.querySelectorAll('.snav-btn').forEach((b,i)=>{
-    b.classList.toggle('on',b.getAttribute('onclick')===`show('${key}')`);
+  document.querySelectorAll('.snav-btn[data-panel]').forEach(b=>{
+    b.classList.toggle('on',b.dataset.panel===key);
   });
+  if(location.hash.slice(1)!==key) history.replaceState(null,'',`#${key}`);
   window.scrollTo(0,0);
 }
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1)||'login-gate');
 
 /* ── PRICING TOGGLE ── */
 function setPricing(mode){
@@ -970,4 +1075,3 @@ function showAdmin(key){
 </script>
 </body>
 </html>
-HTMLEOF
