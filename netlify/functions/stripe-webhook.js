@@ -33,12 +33,6 @@ async function mirrorSubscription(subscription) {
         : null
     })
   });
-  await supabaseRest(`users?id=eq.${userId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      plan: ['active','trialing'].includes(subscription.status) ? 'plus' : 'free'
-    })
-  });
 }
 
 exports.handler = async (event) => {

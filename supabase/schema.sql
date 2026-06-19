@@ -38,7 +38,6 @@ create table public.users (
   email text not null unique,
   display_name text,
   avatar_config jsonb not null default '{}'::jsonb,
-  plan text not null default 'free' check (plan in ('free','plus')),
   streak_count int not null default 0,
   streak_last_date date,
   created_at timestamptz not null default now(),
@@ -63,6 +62,8 @@ create table public.sessions (
 
 create index sessions_user_id_idx on public.sessions(user_id);
 create index sessions_started_at_idx on public.sessions(started_at);
+alter table public.sessions
+add constraint sessions_scores_is_object check (jsonb_typeof(scores) = 'object');
 
 create table public.questions (
   id uuid primary key default gen_random_uuid(),
@@ -97,6 +98,10 @@ create index responses_session_id_idx on public.responses(session_id);
 create index responses_user_id_idx on public.responses(user_id);
 create index responses_question_id_idx on public.responses(question_id);
 create index responses_answered_at_idx on public.responses(answered_at);
+create unique index responses_session_question_unique_idx on public.responses(session_id, question_id)
+where question_id is not null;
+alter table public.responses
+add constraint responses_score_delta_is_object check (jsonb_typeof(score_delta) = 'object');
 
 create table public.share_links (
   id uuid primary key default gen_random_uuid(),
@@ -115,6 +120,8 @@ create index share_links_user_id_idx on public.share_links(user_id);
 create index share_links_session_id_idx on public.share_links(session_id);
 create index share_links_token_idx on public.share_links(token);
 create index share_links_created_at_idx on public.share_links(created_at);
+alter table public.share_links
+add constraint share_links_scores_snapshot_is_object check (jsonb_typeof(scores_snapshot) = 'object');
 
 create table public.subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -125,12 +132,17 @@ create table public.subscriptions (
   status text not null default 'inactive'
     check (status in ('active','cancelled','past_due','trialing','incomplete','inactive')),
   current_period_end timestamptz,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create index subscriptions_user_id_idx on public.subscriptions(user_id);
 create index subscriptions_stripe_customer_id_idx on public.subscriptions(stripe_customer_id);
 create index subscriptions_stripe_sub_id_idx on public.subscriptions(stripe_sub_id);
+create index subscriptions_status_idx on public.subscriptions(status);
+
+create trigger touch_subscriptions_updated_at before update on public.subscriptions
+for each row execute function public.touch_updated_at();
 
 alter table public.users enable row level security;
 alter table public.sessions enable row level security;
@@ -196,5 +208,45 @@ using (public.is_admin())
 with check (public.is_admin());
 create policy "subscriptions admin delete" on public.subscriptions for delete
 using (public.is_admin());
+
+create or replace view public.session_party_scores
+with (security_invoker = true) as
+select
+  id as session_id,
+  user_id,
+  mode,
+  completed,
+  started_at,
+  completed_at,
+  coalesce(scores->>'democrat', scores->>'D')::numeric as democrat,
+  coalesce(scores->>'republican', scores->>'R')::numeric as republican,
+  coalesce(scores->>'libertarian', scores->>'L')::numeric as libertarian,
+  coalesce(scores->>'green', scores->>'G')::numeric as green,
+  coalesce(scores->>'independent', scores->>'I')::numeric as independent
+from public.sessions;
+
+create or replace view public.response_party_deltas
+with (security_invoker = true) as
+select
+  id as response_id,
+  session_id,
+  user_id,
+  question_id,
+  answered_at,
+  coalesce(score_delta->>'democrat', score_delta->>'D')::numeric as democrat,
+  coalesce(score_delta->>'republican', score_delta->>'R')::numeric as republican,
+  coalesce(score_delta->>'libertarian', score_delta->>'L')::numeric as libertarian,
+  coalesce(score_delta->>'green', score_delta->>'G')::numeric as green,
+  coalesce(score_delta->>'independent', score_delta->>'I')::numeric as independent
+from public.responses;
+
+comment on column public.sessions.scores is
+'Party score JSON. Prefer full keys: democrat, republican, libertarian, green, independent.';
+
+comment on column public.responses.score_delta is
+'Per-answer party delta JSON. Prefer full keys: democrat, republican, libertarian, green, independent.';
+
+comment on column public.share_links.scores_snapshot is
+'Share-time score snapshot JSON. Prefer full party keys over D/R/L/G/I.';
 
 commit;

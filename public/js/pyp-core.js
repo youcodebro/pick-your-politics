@@ -217,7 +217,7 @@
 
   function hasActiveSubscription(profile){
     const sub=Array.isArray(profile?.subscriptions)?profile.subscriptions[0]:profile?.subscriptions;
-    return profile?.plan==='plus'||['active','trialing'].includes(sub?.status);
+    return ['active','trialing'].includes(sub?.status);
   }
 
   async function createCheckoutSession(plan='monthly'){
