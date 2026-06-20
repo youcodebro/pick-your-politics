@@ -2,10 +2,12 @@
   const CONFIG_URL='/.netlify/functions/public-config';
   const STATE_KEY='pyp-local-draft';
   const SCORE_ZERO={D:0,R:0,L:0,G:0,I:0};
+  const ACTIVE_SESSION_STATUSES={completed:false};
 
   let configPromise=null;
   let clientPromise=null;
   let userPromise=null;
+  const questionIdCache=new Map();
 
   function nowIso(){return new Date().toISOString();}
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -15,6 +17,30 @@
   }
   function setLocalDraft(next){
     localStorage.setItem(STATE_KEY,JSON.stringify({...localDraft(),...next,updated_at:nowIso()}));
+  }
+  function uniqueAnswers(answers=[]){
+    const seen=new Set();
+    answers.forEach(answer=>{
+      const key=answer.question_id||`${answer.module_id||'unknown'}:${answer.question_index}`;
+      seen.add(key);
+    });
+    return seen.size;
+  }
+  function scoreTotal(scores={}){
+    return Object.values(scores||{}).reduce((sum,value)=>sum+Math.max(0,Number(value)||0),0);
+  }
+  function topParty(scores={}){
+    return Object.entries(scores||{}).sort((a,b)=>(Number(b[1])||0)-(Number(a[1])||0))[0]?.[0]||'D';
+  }
+  function shortPartyName(key){
+    return ({D:'Dem',R:'Rep',L:'Lib',G:'Green',I:'Ind',democrat:'Dem',republican:'Rep',libertarian:'Lib',green:'Green',independent:'Ind'})[key]||key;
+  }
+  function completedModuleCount(answers=[]){
+    const counts=answers.reduce((acc,answer)=>{
+      if(answer.module_id) acc[answer.module_id]=(acc[answer.module_id]||0)+1;
+      return acc;
+    },{});
+    return Object.values(counts).filter(count=>count>=8).length;
   }
 
   async function loadConfig(){
@@ -99,6 +125,44 @@
     userPromise=null;
   }
 
+  async function syncLocalDraft(){
+    const draft=localDraft();
+    const answers=draft.answers||[];
+    if(!draft.local||!answers.length) return null;
+    const sb=await supabaseClient();
+    const user=await currentUser();
+    if(!sb||!user) return null;
+    await ensureProfile();
+    const {data,error}=await sb.from('sessions').insert({
+      user_id:user.id,
+      mode:draft.mode==='full'?'full':'daily',
+      module_id:draft.current_module_id||draft.module_id||null,
+      scores:draft.party_scores||SCORE_ZERO,
+      questions_answered:0,
+      skips_used:draft.skips_used||0,
+      completed:false
+    }).select('id').single();
+    if(error) throw error;
+    const originalAnswers=answers.map(answer=>({...answer}));
+    setLocalDraft({
+      session_id:data.id,
+      current_session_id:data.id,
+      local:false,
+      answers:[],
+      mode:draft.mode==='full'?'full':'daily',
+      status:'in_progress'
+    });
+    for(const answer of originalAnswers){
+      await saveAnswer({
+        ...answer,
+        mode:draft.mode==='full'?'full':'daily',
+        party_scores:answer.party_scores||draft.party_scores||SCORE_ZERO,
+        skips_used:answer.skips_used||draft.skips_used||0
+      });
+    }
+    return data.id;
+  }
+
   async function startSession({mode='daily',moduleId=null}={}){
     mode=mode==='full'?'full':'daily';
     const sb=await supabaseClient();
@@ -110,8 +174,28 @@
       return {id,local:true};
     }
     await ensureProfile();
-    if(draft.session_id&&!draft.local){
+    if(draft.session_id&&!draft.local&&draft.mode===mode&&draft.status!=='complete'){
       return {id:draft.session_id,local:false};
+    }
+    const {data:existing}=await sb.from('sessions')
+      .select('*')
+      .eq('user_id',user.id)
+      .eq('mode',mode)
+      .eq('completed',ACTIVE_SESSION_STATUSES.completed)
+      .order('started_at',{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(existing){
+      setLocalDraft({
+        session_id:existing.id,
+        local:false,
+        mode:existing.mode,
+        module_id:existing.module_id||moduleId,
+        current_module_id:existing.module_id||moduleId,
+        party_scores:existing.scores||SCORE_ZERO,
+        status:'in_progress'
+      });
+      return {id:existing.id,local:false};
     }
     const {data,error}=await sb.from('sessions').insert({
       user_id:user.id,
@@ -124,11 +208,34 @@
     return {id:data.id,local:false};
   }
 
+  async function resolveQuestionId(payload){
+    if(payload.question_id) return payload.question_id;
+    const moduleId=payload.module_id;
+    const orderIndex=Number(payload.question_order_index||payload.question_index+1);
+    if(!moduleId||!Number.isFinite(orderIndex)) return null;
+    const key=`${moduleId}:${orderIndex}`;
+    if(questionIdCache.has(key)) return questionIdCache.get(key);
+    const sb=await supabaseClient();
+    if(!sb) return null;
+    const {data,error}=await sb.from('questions')
+      .select('id')
+      .eq('module_id',moduleId)
+      .eq('order_index',orderIndex)
+      .maybeSingle();
+    if(error) return null;
+    const id=data?.id||null;
+    questionIdCache.set(key,id);
+    return id;
+  }
+
   async function saveAnswer(payload){
     const session=await startSession({mode:payload.mode,moduleId:payload.module_id});
-    const answer={...payload,session_id:session.id,answered_at:nowIso()};
+    const questionId=session.local?payload.question_id||null:await resolveQuestionId(payload);
+    const answer={...payload,question_id:questionId,session_id:session.id,answered_at:nowIso()};
     const draft=localDraft();
-    const answers=[...(draft.answers||[]),answer];
+    const key=questionId||`${payload.module_id}:${payload.question_index}`;
+    const answers=[...(draft.answers||[]).filter(item=>(item.question_id||`${item.module_id}:${item.question_index}`)!==key),answer];
+    const answeredCount=uniqueAnswers(answers);
     setLocalDraft({
       session_id:session.id,
       local:session.local,
@@ -136,52 +243,79 @@
       current_module_id:payload.module_id,
       current_question_index:payload.next_question_index ?? payload.question_index,
       party_scores:payload.party_scores||draft.party_scores||SCORE_ZERO,
+      skips_used:payload.skips_used||draft.skips_used||0,
       status:'in_progress'
     });
     if(session.local) return {local:true};
     const sb=await supabaseClient();
     const user=await currentUser();
-    const {error}=await sb.from('responses').insert({
+    const row={
       user_id:user.id,
       session_id:session.id,
-      question_id:payload.question_id||null,
+      question_id:questionId,
       answer:payload.answer_value,
       score_delta:payload.party_delta||{},
       answered_at:answer.answered_at
-    });
+    };
+    let error=null;
+    if(questionId){
+      const existing=await sb.from('responses')
+        .select('id')
+        .eq('session_id',session.id)
+        .eq('question_id',questionId)
+        .maybeSingle();
+      if(existing.error) error=existing.error;
+      else if(existing.data?.id){
+        const result=await sb.from('responses').update(row).eq('id',existing.data.id);
+        error=result.error;
+      } else {
+        const result=await sb.from('responses').insert(row);
+        error=result.error;
+      }
+    } else {
+      const result=await sb.from('responses').insert(row);
+      error=result.error;
+    }
     if(error) throw error;
     await sb.from('sessions').update({
       module_id:payload.module_id,
       scores:payload.party_scores||{},
-      questions_answered:(payload.next_question_index ?? payload.question_index)+1,
+      questions_answered:answeredCount,
       skips_used:payload.skips_used||0
     }).eq('id',session.id);
     return {local:false};
   }
 
-  async function completeModule({moduleId,moduleTitle,partyScores,issueScores}){
-    const session=await startSession({moduleId});
+  async function completeModule({mode='daily',moduleId,moduleTitle,partyScores,issueScores,isFinalModule=false}){
+    const session=await startSession({mode,moduleId});
     const draft=localDraft();
+    const completedModules=Array.from(new Set([...(draft.completed_modules||[]),moduleId]));
     setLocalDraft({
-      completed_modules:Array.from(new Set([...(draft.completed_modules||[]),moduleId])),
+      completed_modules:completedModules,
       party_scores:partyScores||draft.party_scores||{},
       issue_scores:issueScores||draft.issue_scores||{},
-      status:'module_complete'
+      status:isFinalModule?'complete':'module_complete'
     });
     if(session.local) return {local:true};
     const sb=await supabaseClient();
     const user=await currentUser();
     const {data:profile}=await sb.from('users').select('streak_count,streak_last_date').eq('id',user.id).maybeSingle();
     const today=new Date().toISOString().slice(0,10);
+    const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const nextStreak=profile?.streak_last_date===today
+      ? (profile?.streak_count||1)
+      : profile?.streak_last_date===yesterday
+        ? (profile?.streak_count||0)+1
+        : 1;
     await sb.from('users').update({
-      streak_count:Math.max(1,profile?.streak_count||1),
+      streak_count:nextStreak,
       streak_last_date:today
     }).eq('id',user.id);
     await sb.from('sessions').update({
-      completed:true,
+      completed:!!isFinalModule,
       module_id:moduleId,
       scores:partyScores||{},
-      completed_at:nowIso()
+      completed_at:isFinalModule?nowIso():null
     }).eq('id',session.id);
     return {local:false,moduleTitle};
   }
@@ -193,16 +327,105 @@
     const {data}=await sb.from('sessions')
       .select('*')
       .eq('user_id',user.id)
+      .eq('completed',false)
       .order('started_at',{ascending:false})
       .limit(1)
       .maybeSingle();
-    if(!data) return localDraft();
-    return {
+    const session=data||((await sb.from('sessions')
+      .select('*')
+      .eq('user_id',user.id)
+      .order('started_at',{ascending:false})
+      .limit(1)
+      .maybeSingle()).data);
+    if(!session) return localDraft();
+    const responses=await sb.from('responses')
+      .select('id,answer,score_delta,answered_at,question_id,questions(module_id,order_index,module_title)')
+      .eq('session_id',session.id)
+      .order('answered_at',{ascending:true});
+    const savedAnswers=(responses.data||[]).map(row=>({
+      id:row.id,
+      question_id:row.question_id,
+      module_id:row.questions?.module_id||session.module_id,
+      module_title:row.questions?.module_title,
+      question_index:Number.isInteger(row.questions?.order_index)?row.questions.order_index-1:null,
+      answer_value:row.answer,
+      party_delta:row.score_delta||{},
+      answered_at:row.answered_at
+    }));
+    const last=savedAnswers[savedAnswers.length-1]||null;
+    const currentQuestionIndex=last&&Number.isInteger(last.question_index)?last.question_index+1:Math.max(0,(session.questions_answered||0)-1);
+    const progress={
       ...localDraft(),
-      current_session_id:data.id,
-      current_module_id:data.module_id,
-      current_question_index:Math.max(0,(data.questions_answered||0)-1),
-      party_scores:data.scores||{}
+      session_id:session.id,
+      current_session_id:session.id,
+      local:false,
+      mode:session.mode,
+      current_module_id:last?.module_id||session.module_id,
+      current_question_index:currentQuestionIndex,
+      questions_answered:session.questions_answered||savedAnswers.length,
+      skips_used:session.skips_used||0,
+      completed_modules:Array.from(new Set(savedAnswers.map(a=>a.module_id).filter(Boolean).filter(moduleId=>savedAnswers.filter(a=>a.module_id===moduleId).length>=8))),
+      party_scores:session.scores||{},
+      answers:savedAnswers,
+      completed:session.completed,
+      status:session.completed?'complete':'in_progress'
+    };
+    setLocalDraft(progress);
+    return progress;
+  }
+
+  async function loadResults(){
+    const progress=await loadProgress();
+    const sb=await supabaseClient();
+    const user=await currentUser();
+    if(!sb||!user) return progress;
+    const {data:sessions}=await sb.from('sessions')
+      .select('*')
+      .eq('user_id',user.id)
+      .order('started_at',{ascending:false})
+      .limit(8);
+    return {
+      ...progress,
+      sessions:sessions||[],
+      latest_session:sessions?.[0]||null
+    };
+  }
+
+  async function loadDashboard(){
+    const [profile,results]=await Promise.all([
+      loadProfile().catch(()=>null),
+      loadResults().catch(()=>localDraft())
+    ]);
+    const sessions=results.sessions||[];
+    const latest=results.latest_session||null;
+    const questionsAnswered=latest?.questions_answered||results.questions_answered||uniqueAnswers(results.answers||[]);
+    const skips=latest?.skips_used||results.skips_used||0;
+    const notSure=(results.answers||[]).filter(answer=>answer.answer_value==='__not_sure__').length;
+    const consistency=Math.max(0,Math.min(100,Math.round(100-((skips+notSure)*4))));
+    const modulesDone=completedModuleCount(results.answers||[]);
+    return {
+      profile,
+      isPaid:hasActiveSubscription(profile),
+      questionsAnswered,
+      consistency,
+      modulesDone,
+      streakCount:profile?.streak_count||0,
+      lastActivity:latest?.completed_at||latest?.started_at||null,
+      scores:latest?.scores||results.party_scores||SCORE_ZERO,
+      sessions,
+      retakes:sessions.map(session=>{
+        const scores=session.scores||{};
+        const top=topParty(scores);
+        const total=scoreTotal(scores)||1;
+        return {
+          id:session.id,
+          date:session.completed_at||session.started_at,
+          top,
+          topLabel:shortPartyName(top),
+          topPct:Math.round(Math.max(0,Number(scores[top])||0)/total*100),
+          scores
+        };
+      })
     };
   }
 
@@ -283,8 +506,10 @@
     const sb=await supabaseClient();
     if(!sb) return null;
     await ensureProfile().catch(()=>null);
+    await syncLocalDraft().catch(err=>console.warn('Could not sync local draft.',err));
     sb.auth.onAuthStateChange(async()=>{
       await ensureProfile().catch(()=>null);
+      await syncLocalDraft().catch(err=>console.warn('Could not sync local draft.',err));
       userPromise=null;
       document.dispatchEvent(new CustomEvent('pyp:auth-change',{detail:{user:await currentUser()}}));
     });
@@ -300,10 +525,13 @@
     signInWithGoogle,
     sendMagicLink,
     signOut,
+    syncLocalDraft,
     startSession,
     saveAnswer,
     completeModule,
     loadProgress,
+    loadResults,
+    loadDashboard,
     loadProfile,
     hasActiveSubscription,
     createCheckoutSession,

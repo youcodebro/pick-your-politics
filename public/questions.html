@@ -530,7 +530,7 @@ const ALL_MOD_TITLES=MODS.map(m=>m.title);
 
 let S={
   modIdx:0,qIdx:0,
-  scores:{D:10,R:8,L:6,G:4,I:2},
+  scores:{D:0,R:0,L:0,G:0,I:0},
   skips:3,
   helpOpen:false,
   widgetOpen:true,
@@ -547,13 +547,21 @@ async function initQuestionBackend(){
     if(progress?.party_scores&&Object.keys(progress.party_scores).length){
       S.scores={...S.scores,...progress.party_scores};
     }
+    if(Number.isInteger(progress?.skips_used)){
+      S.skips=Math.max(0,3-progress.skips_used);
+    }
     if(progress?.current_module_id){
       const idx=MODS.findIndex(m=>m.id===progress.current_module_id);
       if(idx>=0) S.modIdx=idx;
     }
     if(Number.isInteger(progress?.current_question_index)){
-      const max=(MODS[S.modIdx]?.questions.length||1)-1;
-      S.qIdx=Math.max(0,Math.min(progress.current_question_index,max));
+      const currentLen=MODS[S.modIdx]?.questions.length||1;
+      if(progress.current_question_index>=currentLen&&S.modIdx+1<MODS.length){
+        S.modIdx++;
+        S.qIdx=0;
+      }else{
+        S.qIdx=Math.max(0,Math.min(progress.current_question_index,currentLen-1));
+      }
     }
     await PYP.startSession({mode:PYP_MODE,moduleId:MODS[S.modIdx].id});
     renderAll();
@@ -571,7 +579,8 @@ function persistQuestionAnswer(val,q){
     module_id:MODS[S.modIdx].id,
     module_title:MODS[S.modIdx].title,
     question_index:S.qIdx,
-    next_question_index:Math.min(S.qIdx+1,MODS[S.modIdx].questions.length-1),
+    question_order_index:S.qIdx+1,
+    next_question_index:S.qIdx+1,
     question_prompt:q.p,
     answer_value:val,
     answer_kind:kind,
@@ -585,10 +594,12 @@ function persistQuestionAnswer(val,q){
 function persistModuleComplete(){
   if(!window.PYP) return;
   PYP.completeModule({
+    mode:PYP_MODE,
     moduleId:MODS[S.modIdx].id,
     moduleTitle:MODS[S.modIdx].title,
     partyScores:S.scores,
-    issueScores:{}
+    issueScores:{},
+    isFinalModule:S.modIdx+1>=MODS.length
   }).catch(err=>console.warn('Could not persist module completion.',err));
 }
 

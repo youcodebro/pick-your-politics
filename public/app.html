@@ -1126,28 +1126,12 @@ async function initBackendUI(){
 }
 
 async function hydrateBackendPanels(){
-  const [profile,progress]=await Promise.all([
-    PYP.loadProfile().catch(()=>null),
-    PYP.loadProgress().catch(()=>null)
-  ]);
+  const dashboard=await PYP.loadDashboard();
+  hydratePartyResults(dashboard.scores||{});
+  hydrateDashboardStats(dashboard);
+  hydrateRetakeHistory(dashboard.retakes||[]);
 
-  if(progress?.party_scores&&Object.keys(progress.party_scores).length){
-    const scores=progress.party_scores;
-    const total=Object.values(scores).reduce((sum,v)=>sum+Math.max(0,Number(v)||0),0)||1;
-    const names={D:'Democrat',R:'Republican',L:'Libertarian',G:'Green',I:'Independent'};
-    document.querySelectorAll('.results-party-row').forEach(row=>{
-      const label=row.querySelector('span')?.textContent?.trim();
-      const key=Object.entries(names).find(([,name])=>name===label)?.[0];
-      if(!key) return;
-      const pct=Math.round(Math.max(0,Number(scores[key])||0)/total*100);
-      const fill=row.querySelector('.results-party-fill');
-      const strong=row.querySelector('strong');
-      if(fill) fill.style.width=pct+'%';
-      if(strong) strong.textContent=pct+'%';
-    });
-  }
-
-  const isPaid=PYP.hasActiveSubscription(profile);
+  const isPaid=dashboard.isPaid;
   document.querySelectorAll('.dash-badge').forEach(badge=>{
     badge.innerHTML=isPaid?'<i class="ti ti-star" style="font-size:11px"></i> PYP+':'Free';
   });
@@ -1156,6 +1140,90 @@ async function hydrateBackendPanels(){
   });
 
   hydrateAdminModules().catch(()=>{});
+}
+
+function scoreEntries(scores){
+  const meta={
+    D:{name:'Democrat',color:'#185FA5',short:'Dem'},
+    R:{name:'Republican',color:'#A32D2D',short:'Rep'},
+    L:{name:'Libertarian',color:'#BA7517',short:'Lib'},
+    G:{name:'Green',color:'#3B6D11',short:'Green'},
+    I:{name:'Independent',color:'#534AB7',short:'Ind'}
+  };
+  const entries=Object.entries(meta).map(([key,info])=>({
+    key,
+    ...info,
+    value:Math.max(0,Number(scores[key])||0)
+  }));
+  const total=entries.reduce((sum,item)=>sum+item.value,0)||1;
+  return entries.map(item=>({...item,pct:Math.round(item.value/total*100)}));
+}
+
+function hydratePartyResults(scores){
+  const entries=scoreEntries(scores);
+  const byName=Object.fromEntries(entries.map(item=>[item.name,item]));
+  document.querySelectorAll('.results-party-row').forEach(row=>{
+    const label=row.querySelector('span')?.textContent?.trim();
+    const item=byName[label];
+    if(!item) return;
+    const fill=row.querySelector('.results-party-fill');
+    const strong=row.querySelector('strong');
+    if(fill){
+      fill.style.width=item.pct+'%';
+      fill.style.background=item.color;
+    }
+    if(strong) strong.textContent=item.pct+'%';
+  });
+
+  const top=[...entries].sort((a,b)=>b.pct-a.pct)[0]||entries[0];
+  const title=document.querySelector('.results-donut-card .section-title');
+  const sub=document.querySelector('.results-donut-card .section-sub');
+  if(title) title.textContent=top.pct?`${top.name}-leaning mix`:'Start answering to build your profile';
+  if(sub) sub.textContent=top.pct
+    ? `Your current strongest signal is ${top.name}, with the rest of your mix still visible.`
+    : 'Your saved answers will shape this profile as you go.';
+  const donutText=document.querySelector('.results-donut text');
+  if(donutText) donutText.textContent=`${top.pct||0}%`;
+}
+
+function hydrateDashboardStats(dashboard){
+  const displayName=dashboard.profile?.display_name||dashboard.profile?.email?.split('@')[0]||'there';
+  const welcome=document.querySelector('#page-dashboard .dash-welcome');
+  if(welcome) welcome.innerHTML=`Welcome back, ${displayName} <span class="dash-badge">${dashboard.isPaid?'<i class="ti ti-star" style="font-size:11px"></i> PYP+':'Free'}</span>`;
+  const sub=document.querySelector('#page-dashboard .dash-sub');
+  if(sub){
+    const last=dashboard.lastActivity?new Date(dashboard.lastActivity).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'No saved session yet';
+    sub.textContent=`Last session: ${last} · ${dashboard.streakCount||0}-day streak`;
+  }
+  const stats=document.querySelectorAll('#page-dashboard .stat-card .stat-n');
+  if(stats[0]) stats[0].textContent=dashboard.questionsAnswered||0;
+  if(stats[1]) stats[1].textContent=`${dashboard.consistency||0}%`;
+  if(stats[2]) stats[2].textContent=dashboard.streakCount||0;
+  if(stats[3]) stats[3].textContent=`${dashboard.modulesDone||0}/8`;
+
+  const resultSub=document.querySelector('#page-results .dash-sub');
+  if(resultSub) resultSub.textContent=`${dashboard.questionsAnswered||0} questions answered · ${dashboard.modulesDone||0}/8 modules · synced from Supabase`;
+  const consistency=document.querySelector('.consist-score');
+  const consistencyNote=document.querySelector('.consist-note');
+  if(consistency) consistency.textContent=`${dashboard.consistency||0}%`;
+  if(consistencyNote) consistencyNote.textContent=`Saved across ${dashboard.sessions?.length||0} session${dashboard.sessions?.length===1?'':'s'} with ${dashboard.questionsAnswered||0} answered questions.`;
+}
+
+function hydrateRetakeHistory(retakes){
+  const rows=document.querySelector('.retake-rows');
+  if(!rows) return;
+  if(!retakes.length){
+    rows.innerHTML='<div class="retake-row"><span class="retake-date">No retakes yet</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:0%"></div></div></div><span class="retake-top">Start</span></div>';
+    return;
+  }
+  rows.innerHTML=retakes.map(item=>{
+    const date=new Date(item.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+    return `<div class="retake-row"><span class="retake-date">${date}</span><div class="retake-bar-wrap"><div class="retake-bar-track"><div class="retake-bar-fill" style="width:${item.topPct}%;background:${partyColor(item.top)}"></div></div></div><span class="retake-top" style="color:${partyColor(item.top)}">${item.topLabel} ${item.topPct}%</span></div>`;
+  }).join('');
+}
+
+function partyColor(key){
+  return ({D:'#185FA5',R:'#A32D2D',L:'#BA7517',G:'#3B6D11',I:'#534AB7'})[key]||'#185FA5';
 }
 
 async function hydrateAdminModules(){
