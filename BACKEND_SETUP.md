@@ -19,9 +19,15 @@
 3. Point the Stripe webhook endpoint to:
    - `https://YOUR_SITE.netlify.app/.netlify/functions/stripe-webhook`
 4. Subscribe the webhook to:
+   - `checkout.session.completed`
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
+5. In local development, forward Stripe events to Netlify Dev:
+
+```powershell
+stripe listen --forward-to localhost:8888/.netlify/functions/stripe-webhook
+```
 
 ## Local Development
 Use Netlify Dev for functions:

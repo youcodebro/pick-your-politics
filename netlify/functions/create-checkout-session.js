@@ -1,28 +1,10 @@
 const { getBearerUser, supabaseRest } = require('./_supabase');
+const { activeStatus, appReturnUrl, stripePost } = require('./_stripe');
 
-const STRIPE_API = 'https://api.stripe.com/v1';
-
-function form(data) {
-  const params = new URLSearchParams();
-  Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) params.append(key, value);
-  });
-  return params;
-}
-
-async function stripe(path, data) {
-  if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY is missing.');
-  const res = await fetch(`${STRIPE_API}${path}`, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-      'content-type': 'application/x-www-form-urlencoded'
-    },
-    body: form(data)
-  });
-  const body = await res.json();
-  if (!res.ok) throw new Error(body.error?.message || 'Stripe request failed.');
-  return body;
+function withCheckoutState(url, state) {
+  const next = new URL(url);
+  next.searchParams.set('checkout', state);
+  return next.toString();
 }
 
 exports.handler = async (event) => {
@@ -37,49 +19,67 @@ exports.handler = async (event) => {
     const price = plan === 'yearly' ? process.env.STRIPE_PRICE_YEARLY : process.env.STRIPE_PRICE_MONTHLY;
     if (!price) throw new Error(`Stripe ${plan} price id is missing.`);
 
-    const existing = await supabaseRest(`subscriptions?user_id=eq.${user.id}&select=stripe_customer_id`, {
+    await supabaseRest('users', {
+      method: 'POST',
+      headers: { prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        id: user.id,
+        email: user.email,
+        display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || null
+      })
+    });
+
+    const existing = await supabaseRest(`subscriptions?user_id=eq.${user.id}&select=stripe_customer_id,status`, {
       headers: { accept: 'application/json' }
     });
-    let customerId = existing?.[0]?.stripe_customer_id;
+    const subscription = existing?.[0];
+    let customerId = subscription?.stripe_customer_id;
+
+    const dashboardUrl = appReturnUrl(input.returnUrl, event, 'dashboard');
+    const upgradeUrl = appReturnUrl(input.returnUrl, event, 'upgrade');
+
+    if (customerId && activeStatus(subscription?.status)) {
+      const portal = await stripePost('/billing_portal/sessions', {
+        customer: customerId,
+        return_url: dashboardUrl
+      });
+      return { statusCode: 200, body: JSON.stringify({ url: portal.url, mode: 'portal' }) };
+    }
 
     if (!customerId) {
-      const customer = await stripe('/customers', {
+      const customer = await stripePost('/customers', {
         email: user.email,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
         'metadata[user_id]': user.id
       });
       customerId = customer.id;
-      await supabaseRest('users', {
-        method: 'POST',
-        headers: { prefer: 'resolution=merge-duplicates' },
-        body: JSON.stringify({ id: user.id, email: user.email })
-      });
-      await supabaseRest('subscriptions?on_conflict=user_id', {
-        method: 'POST',
-        headers: { prefer: 'resolution=merge-duplicates' },
-        body: JSON.stringify({
-          user_id: user.id,
-          stripe_customer_id: customerId,
-          plan,
-          status: 'inactive'
-        })
-      });
     }
 
-    const fallbackApp = `${process.env.URL || event.headers.origin || ''}/app.html`;
-    const appUrl = input.returnUrl || fallbackApp;
-    const cleanAppUrl = appUrl.split('#')[0].split('?')[0];
-    const session = await stripe('/checkout/sessions', {
+    await supabaseRest('subscriptions?on_conflict=user_id', {
+      method: 'POST',
+      headers: { prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        user_id: user.id,
+        stripe_customer_id: customerId,
+        plan,
+        status: 'inactive'
+      })
+    });
+
+    const session = await stripePost('/checkout/sessions', {
       mode: 'subscription',
       customer: customerId,
       'line_items[0][price]': price,
       'line_items[0][quantity]': '1',
-      success_url: `${cleanAppUrl}?checkout=success#dashboard`,
-      cancel_url: `${cleanAppUrl}?checkout=cancel#upgrade`,
+      success_url: withCheckoutState(dashboardUrl, 'success'),
+      cancel_url: withCheckoutState(upgradeUrl, 'cancel'),
+      client_reference_id: user.id,
       'metadata[user_id]': user.id,
+      'metadata[plan]': plan,
       'subscription_data[metadata][user_id]': user.id
     });
 
-    return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
+    return { statusCode: 200, body: JSON.stringify({ url: session.url, mode: 'checkout' }) };
   } catch (error) {
     return { statusCode: 400, body: JSON.stringify({ error: error.message }) };
   }

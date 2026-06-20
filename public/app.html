@@ -677,6 +677,8 @@ img,svg{transition:none}
       <div class="dash-sub">Last session: 2 days ago · 4-day streak active</div>
     </div>
 
+    <button class="btn-outline" id="billing-portal-btn" onclick="openBillingPortal()" style="margin:-.625rem 0 1rem;display:none"><i class="ti ti-credit-card" style="font-size:14px"></i> Manage billing</button>
+
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-n">47</div><div class="stat-l">Questions answered</div></div>
       <div class="stat-card"><div class="stat-n" style="color:var(--green)">86%</div><div class="stat-l">Consistency score</div></div>
@@ -1050,6 +1052,19 @@ function show(key){
 window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1)||'login-gate');
 
+function showCheckoutNotice(){
+  const state=new URLSearchParams(location.search).get('checkout');
+  if(!state) return;
+  const message=state==='success'
+    ? 'Checkout complete. Your PYP+ access will update as soon as Stripe confirms the subscription.'
+    : 'Checkout was cancelled. You can restart upgrade whenever you are ready.';
+  setTimeout(()=>alert(message),250);
+  const clean=new URL(location.href);
+  clean.searchParams.delete('checkout');
+  history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+}
+showCheckoutNotice();
+
 /* ── PRICING TOGGLE ── */
 function setPricing(mode){
   window.PYP_BILLING_MODE=mode;
@@ -1091,6 +1106,14 @@ async function startUpgradeCheckout(){
     await PYP.createCheckoutSession(window.PYP_BILLING_MODE||'monthly');
   }catch(err){
     alert(err.message||'Could not start checkout.');
+  }
+}
+
+async function openBillingPortal(){
+  try{
+    await PYP.openCustomerPortal();
+  }catch(err){
+    alert(err.message||'Could not open billing portal.');
   }
 }
 
@@ -1138,6 +1161,8 @@ async function hydrateBackendPanels(){
   document.querySelectorAll('.locked-overlay').forEach(overlay=>{
     overlay.style.display=isPaid?'none':'flex';
   });
+  const portalBtn=document.getElementById('billing-portal-btn');
+  if(portalBtn) portalBtn.style.display=isPaid?'inline-flex':'none';
 
   hydrateAdminModules().catch(()=>{});
 }

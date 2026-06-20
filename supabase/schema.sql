@@ -139,6 +139,8 @@ create table public.subscriptions (
 create index subscriptions_user_id_idx on public.subscriptions(user_id);
 create index subscriptions_stripe_customer_id_idx on public.subscriptions(stripe_customer_id);
 create index subscriptions_stripe_sub_id_idx on public.subscriptions(stripe_sub_id);
+create unique index subscriptions_stripe_sub_id_unique_idx on public.subscriptions(stripe_sub_id)
+where stripe_sub_id is not null;
 create index subscriptions_status_idx on public.subscriptions(status);
 
 create trigger touch_subscriptions_updated_at before update on public.subscriptions

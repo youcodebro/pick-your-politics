@@ -1,4 +1,5 @@
 const { getBearerUser, supabaseRest } = require('./_supabase');
+const { appReturnUrl, stripePost } = require('./_stripe');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
@@ -14,19 +15,10 @@ exports.handler = async (event) => {
     if (!customer) throw new Error('No Stripe customer found.');
 
     const input = JSON.parse(event.body || '{}');
-    const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-        'content-type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        customer,
-        return_url: input.returnUrl || event.headers.origin || process.env.URL || ''
-      })
+    const body = await stripePost('/billing_portal/sessions', {
+      customer,
+      return_url: appReturnUrl(input.returnUrl, event, 'dashboard')
     });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error?.message || 'Could not create portal session.');
     return { statusCode: 200, body: JSON.stringify({ url: body.url }) };
   } catch (error) {
     return { statusCode: 400, body: JSON.stringify({ error: error.message }) };
