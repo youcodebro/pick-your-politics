@@ -1084,6 +1084,8 @@ function setPricing(mode){
 
 /* ── ADMIN SUB-NAV ── */
 const ADMIN_PAGES=['analytics','modules','questions','scoring','users','settings'];
+const ADMIN_CACHE={questions:[]};
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function showAdmin(key){
   ADMIN_PAGES.forEach(k=>{
     const el=document.getElementById('admin-'+k);
@@ -1092,6 +1094,7 @@ function showAdmin(key){
   document.querySelectorAll('.admin-nav-item').forEach(item=>{
     item.classList.toggle('on',item.getAttribute('onclick')===`showAdmin('${key}')`);
   });
+  hydrateAdminSection(key).catch(err=>console.warn('Could not hydrate admin section.',err));
 }
 
 async function startUpgradeCheckout(){
@@ -1143,8 +1146,16 @@ async function initBackendUI(){
   if(user){
     const gateSub=document.querySelector('.gate-sub');
     if(gateSub) gateSub.textContent=`Signed in as ${user.email}. Your profile can now sync across devices.`;
-    initAdminCrud();
+    const admin=await PYP.isAdmin().catch(()=>false);
+    if(admin){
+      initAdminCrud();
+      hydrateAdminSection('analytics').catch(()=>{});
+    }else{
+      lockAdminPanel();
+    }
     hydrateBackendPanels().catch(()=>{});
+  }else{
+    lockAdminPanel();
   }
 }
 
@@ -1254,9 +1265,9 @@ function partyColor(key){
 async function hydrateAdminModules(){
   const result=await PYP.adminList('questions');
   if(result.error||!result.data?.length) return;
+  ADMIN_CACHE.questions=result.data||[];
   const tbody=document.querySelector('#admin-modules tbody');
   if(!tbody) return;
-  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const modules=Object.values(result.data.reduce((acc,q)=>{
     const id=q.module_id||'unassigned';
     if(!acc[id]) acc[id]={id,title:q.module_title||id,count:0,active:0};
@@ -1283,9 +1294,131 @@ async function hydrateAdminModules(){
   });
 }
 
+function lockAdminPanel(){
+  const main=document.querySelector('#page-admin .admin-main');
+  if(!main) return;
+  main.innerHTML='<div class="card"><div class="section-title">Admin access required</div><div class="section-sub" style="margin-bottom:0">Sign in with an account whose Supabase auth app metadata has role set to admin.</div></div>';
+}
+
+async function hydrateAdminSection(key){
+  if(!await PYP.isAdmin().catch(()=>false)){
+    lockAdminPanel();
+    return;
+  }
+  if(key==='analytics') return hydrateAdminAnalytics();
+  if(key==='modules') return hydrateAdminModules();
+  if(key==='questions') return hydrateAdminQuestions();
+  if(key==='scoring') return hydrateAdminScoring();
+  if(key==='users') return hydrateAdminUsers();
+  if(key==='settings') return hydrateAdminSettings();
+}
+
+async function hydrateAdminAnalytics(){
+  const data=await PYP.adminAnalytics();
+  const stats=document.querySelectorAll('#admin-analytics .admin-stat');
+  const setStat=(idx,value,label,delta='Live')=>{
+    const stat=stats[idx];
+    if(!stat) return;
+    stat.querySelector('.admin-stat-n').textContent=value;
+    stat.querySelector('.admin-stat-l').textContent=label;
+    stat.querySelector('.admin-stat-delta').textContent=delta;
+    stat.querySelector('.admin-stat-delta').className='admin-stat-delta up';
+  };
+  setStat(0,data.sessions_started,'Sessions started','Last 30 days');
+  setStat(1,`${data.completion_rate}%`,'Session completion','Completed sessions');
+  setStat(2,data.subscribers,'PYP+ subscribers','Active/trialing');
+  setStat(3,`${data.share_rate}%`,'Share rate','Public shares');
+
+  const bars=document.querySelector('#admin-analytics .dropoff-bars');
+  if(!bars) return;
+  const rows=(data.dropoff||[]).slice(0,8);
+  bars.innerHTML=rows.length?rows.map(q=>`
+    <div class="dropoff-row">
+      <span class="dropoff-label">${esc(q.module_id)}.${q.order_index} — ${esc(q.prompt).slice(0,38)}</span>
+      <div class="dropoff-track"><div class="dropoff-fill" style="width:${Math.min(100,q.completion_rate||0)}%"></div></div>
+      <span class="dropoff-pct">${q.completion_rate||0}%</span>
+    </div>`).join(''):'<div class="section-sub" style="margin-bottom:0">No response data yet.</div>';
+}
+
+async function hydrateAdminQuestions(){
+  const result=await PYP.adminList('questions');
+  if(result.error) throw result.error;
+  ADMIN_CACHE.questions=result.data||[];
+  const tbody=document.querySelector('#admin-questions tbody');
+  if(!tbody) return;
+  tbody.innerHTML=ADMIN_CACHE.questions.map(q=>`
+    <tr>
+      <td>${q.module_id}.${q.order_index}</td>
+      <td>${esc(q.prompt)}</td>
+      <td>${esc(q.question_type)}</td>
+      <td>${q.binary_options?'Options set':'—'}</td>
+      <td><span class="admin-status ${q.is_active?'pub':'draft'}">${q.is_active?'Live':'Draft'}</span></td>
+      <td class="admin-actions">
+        <button class="admin-icon-btn" title="Edit question" data-admin-action="edit-question" data-question-id="${q.id}"><i class="ti ti-edit"></i></button>
+        <button class="admin-icon-btn" title="${q.is_active?'Unpublish':'Publish'}" data-admin-action="toggle-question" data-question-id="${q.id}"><i class="ti ${q.is_active?'ti-eye-off':'ti-eye'}"></i></button>
+        <button class="admin-icon-btn" title="Delete question" data-admin-action="delete-question" data-question-id="${q.id}"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-admin-action="edit-question"]').forEach(btn=>btn.addEventListener('click',()=>adminEditQuestion(btn.dataset.questionId)));
+  tbody.querySelectorAll('[data-admin-action="toggle-question"]').forEach(btn=>btn.addEventListener('click',()=>adminToggleQuestion(btn.dataset.questionId)));
+  tbody.querySelectorAll('[data-admin-action="delete-question"]').forEach(btn=>btn.addEventListener('click',()=>adminDeleteQuestion(btn.dataset.questionId)));
+}
+
+async function hydrateAdminScoring(){
+  if(!ADMIN_CACHE.questions.length) await hydrateAdminQuestions();
+  const question=ADMIN_CACHE.questions[0];
+  const sub=document.querySelector('#admin-scoring .admin-page-sub');
+  const tbody=document.querySelector('#admin-scoring tbody');
+  if(!question||!tbody) return;
+  if(sub) sub.textContent=`${question.module_id}.${question.order_index} — ${question.prompt}`;
+  const scoring=question.scoring||{};
+  const rows=Object.entries(scoring).length?Object.entries(scoring):[['No scoring yet',{}]];
+  tbody.innerHTML=rows.map(([answer,delta])=>`
+    <tr>
+      <td style="text-align:left;font-weight:500">${esc(answer)}</td>
+      ${['D','R','L','G'].map(key=>`<td><span class="score-val ${(Number(delta?.[key])||0)>0?'pos':(Number(delta?.[key])||0)<0?'neg':'zero'}">${Number(delta?.[key])||0}</span></td>`).join('')}
+      <td><span class="score-val zero">JSON</span></td>
+    </tr>`).join('');
+}
+
+async function hydrateAdminUsers(){
+  const [users,sessions]=await Promise.all([PYP.adminList('users'),PYP.adminList('sessions')]);
+  if(users.error) throw users.error;
+  const sessionRows=sessions.data||[];
+  const tbody=document.querySelector('#admin-users tbody');
+  const sub=document.querySelector('#admin-users .admin-page-sub');
+  if(sub){
+    const paid=(users.data||[]).filter(u=>{
+      const row=Array.isArray(u.subscriptions)?u.subscriptions[0]:u.subscriptions;
+      return ['active','trialing'].includes(row?.status);
+    }).length;
+    sub.textContent=`${users.data?.length||0} visible users · ${paid} PYP+ subscribers`;
+  }
+  if(!tbody) return;
+  tbody.innerHTML=(users.data||[]).map(user=>{
+    const subscription=Array.isArray(user.subscriptions)?user.subscriptions[0]:user.subscriptions;
+    const questions=sessionRows.filter(s=>s.user_id===user.id).reduce((sum,s)=>sum+(s.questions_answered||0),0);
+    const paid=['active','trialing'].includes(subscription?.status);
+    const joined=user.created_at?new Date(user.created_at).toLocaleDateString(undefined,{month:'short',year:'numeric'}):'—';
+    return `<tr><td>${esc(user.email)}</td><td><span class="admin-status ${paid?'pub':'draft'}">${paid?'PYP+':'Free'}</span></td><td>${questions}</td><td>${user.streak_count||0} days</td><td>${joined}</td></tr>`;
+  }).join('');
+}
+
+function hydrateAdminSettings(){
+  const settings=document.querySelector('#admin-settings .card');
+  if(!settings) return;
+  if(settings.querySelector('[data-admin-settings-note]')) return;
+  settings.insertAdjacentHTML('beforeend','<div style="font-size:12px;color:var(--text3);margin-top:1rem">Settings are currently display-only. Persisted app settings need a dedicated settings table or edge config before these toggles should mutate production behavior.</div>');
+  settings.lastElementChild?.setAttribute('data-admin-settings-note','true');
+}
+
 function initAdminCrud(){
   const newModuleBtn=document.querySelector('#admin-modules .admin-new-btn');
   if(newModuleBtn) newModuleBtn.onclick=adminCreateModule;
+  const newQuestionBtn=document.querySelector('#admin-questions .admin-new-btn');
+  if(newQuestionBtn) newQuestionBtn.onclick=adminCreateQuestion;
+  const saveScoringBtn=document.querySelector('#admin-scoring .btn-primary');
+  if(saveScoringBtn) saveScoringBtn.onclick=adminEditFirstScoring;
 }
 
 async function adminCreateModule(){
@@ -1304,6 +1437,7 @@ async function adminCreateModule(){
   });
   if(result.error) return alert(result.error.message||'Could not create module.');
   hydrateAdminModules();
+  hydrateAdminQuestions();
 }
 
 async function adminEditModule(id,currentTitle){
@@ -1312,6 +1446,7 @@ async function adminEditModule(id,currentTitle){
   const result=await PYP.adminUpdateWhere('questions',{module_id:id},{module_title:title});
   if(result.error) return alert(result.error.message||'Could not update module.');
   hydrateAdminModules();
+  hydrateAdminQuestions();
 }
 
 async function adminDeleteModule(id){
@@ -1319,6 +1454,81 @@ async function adminDeleteModule(id){
   const result=await PYP.adminDeleteWhere('questions',{module_id:id});
   if(result.error) return alert(result.error.message||'Could not delete module.');
   hydrateAdminModules();
+  hydrateAdminQuestions();
+}
+
+async function adminCreateQuestion(){
+  const moduleId=(prompt('Module id (m1 through m8)','m1')||'').trim().toLowerCase();
+  if(!/^m[1-8]$/.test(moduleId)) return alert('Module id must be m1 through m8.');
+  const moduleTitle=prompt('Module title','Economy & Taxes')||moduleId;
+  const orderIndex=Number(prompt('Question order within module (1 through 8)','1'));
+  if(!Number.isInteger(orderIndex)||orderIndex<1||orderIndex>8) return alert('Order must be 1 through 8.');
+  const promptText=prompt('Question prompt','Draft question prompt');
+  if(!promptText) return;
+  const type=(prompt('Question type: likert or binary','likert')||'likert').trim().toLowerCase();
+  if(!['likert','binary'].includes(type)) return alert('Type must be likert or binary.');
+  const result=await PYP.adminUpsert('questions',{
+    module_id:moduleId,
+    module_title:moduleTitle,
+    order_index:orderIndex,
+    prompt:promptText,
+    question_type:type,
+    binary_options:type==='binary'?['Yes','No']:null,
+    scoring:{},
+    is_active:false
+  });
+  if(result.error) return alert(result.error.message||'Could not create question.');
+  hydrateAdminQuestions();
+  hydrateAdminModules();
+}
+
+async function adminEditQuestion(id){
+  const question=ADMIN_CACHE.questions.find(q=>q.id===id);
+  if(!question) return;
+  const promptText=prompt('Question prompt',question.prompt);
+  if(!promptText) return;
+  const helpText=prompt('Help text',question.help_text||'')||null;
+  const type=(prompt('Question type: likert or binary',question.question_type)||question.question_type).trim().toLowerCase();
+  if(!['likert','binary'].includes(type)) return alert('Type must be likert or binary.');
+  let binaryOptions=question.binary_options||null;
+  if(type==='binary'){
+    const raw=prompt('Binary options, comma separated',(binaryOptions||['Yes','No']).join(', '));
+    binaryOptions=raw?raw.split(',').map(v=>v.trim()).filter(Boolean):['Yes','No'];
+  }
+  const result=await PYP.adminUpsert('questions',{...question,prompt:promptText,help_text:helpText,question_type:type,binary_options:binaryOptions});
+  if(result.error) return alert(result.error.message||'Could not update question.');
+  hydrateAdminQuestions();
+}
+
+async function adminToggleQuestion(id){
+  const question=ADMIN_CACHE.questions.find(q=>q.id===id);
+  if(!question) return;
+  const result=await PYP.adminUpsert('questions',{...question,is_active:!question.is_active});
+  if(result.error) return alert(result.error.message||'Could not update question status.');
+  hydrateAdminQuestions();
+  hydrateAdminModules();
+}
+
+async function adminDeleteQuestion(id){
+  if(!confirm('Delete this question? Existing responses keep their saved answer but lose the question reference.')) return;
+  const result=await PYP.adminDelete('questions',id);
+  if(result.error) return alert(result.error.message||'Could not delete question.');
+  hydrateAdminQuestions();
+  hydrateAdminModules();
+}
+
+async function adminEditFirstScoring(){
+  if(!ADMIN_CACHE.questions.length) await hydrateAdminQuestions();
+  const question=ADMIN_CACHE.questions[0];
+  if(!question) return alert('No question selected.');
+  const raw=prompt('Scoring JSON for the first listed question',JSON.stringify(question.scoring||{},null,2));
+  if(!raw) return;
+  let scoring;
+  try{scoring=JSON.parse(raw);}
+  catch{return alert('Scoring must be valid JSON.');}
+  const result=await PYP.adminUpsert('questions',{...question,scoring});
+  if(result.error) return alert(result.error.message||'Could not save scoring.');
+  hydrateAdminScoring();
 }
 initBackendUI();
 </script>

@@ -471,35 +471,110 @@
     location.href=data.url;
   }
 
+  async function isAdmin(){
+    const user=await currentUser();
+    return user?.app_metadata?.role==='admin';
+  }
+
+  async function requireAdmin(){
+    if(await isAdmin()) return true;
+    throw new Error('Admin access required.');
+  }
+
   async function adminList(table){
+    await requireAdmin();
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
-    if(table==='questions') return sb.from(table).select('*').order('module_id').order('order_index');
-    return sb.from(table).select('*');
+    if(table==='questions') return sb.from('questions').select('*').order('module_id').order('order_index');
+    if(table==='users') return sb.from('users').select('*,subscriptions(*)').order('created_at',{ascending:false}).limit(100);
+    if(table==='sessions') return sb.from('sessions').select('*').order('started_at',{ascending:false}).limit(250);
+    if(table==='responses') return sb.from('responses').select('id,session_id,user_id,question_id,answer,answered_at').limit(1000);
+    if(table==='share_links') return sb.from('share_links').select('*').order('created_at',{ascending:false}).limit(250);
+    if(table==='subscriptions') return sb.from('subscriptions').select('*').order('created_at',{ascending:false}).limit(250);
+    throw new Error(`Admin table is not allowed: ${table}`);
   }
   async function adminUpsert(table,row){
+    await requireAdmin();
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
-    return sb.from(table).upsert(row).select('*').single();
+    if(!['questions'].includes(table)) throw new Error(`Admin upsert is not allowed for ${table}.`);
+    const options=table==='questions'&&!row.id?{onConflict:'module_id,order_index'}:undefined;
+    return sb.from(table).upsert(row,options).select('*').single();
   }
   async function adminDelete(table,id){
+    await requireAdmin();
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
+    if(!['questions'].includes(table)) throw new Error(`Admin delete is not allowed for ${table}.`);
     return sb.from(table).delete().eq('id',id);
   }
   async function adminUpdateWhere(table,match,row){
+    await requireAdmin();
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
+    if(!['questions'].includes(table)) throw new Error(`Admin update is not allowed for ${table}.`);
     let query=sb.from(table).update(row);
     Object.entries(match).forEach(([key,value])=>{query=query.eq(key,value);});
     return query;
   }
   async function adminDeleteWhere(table,match){
+    await requireAdmin();
     const sb=await supabaseClient();
     if(!sb) throw new Error('Supabase is not configured.');
+    if(!['questions'].includes(table)) throw new Error(`Admin delete is not allowed for ${table}.`);
     let query=sb.from(table).delete();
     Object.entries(match).forEach(([key,value])=>{query=query.eq(key,value);});
     return query;
+  }
+
+  async function adminAnalytics(){
+    await requireAdmin();
+    const sb=await supabaseClient();
+    if(!sb) throw new Error('Supabase is not configured.');
+    const since=new Date(Date.now()-30*86400000).toISOString();
+    const [
+      sessions,
+      completedSessions,
+      users,
+      subscribers,
+      shares,
+      responses,
+      questions
+    ]=await Promise.all([
+      sb.from('sessions').select('id',{count:'exact',head:true}).gte('started_at',since),
+      sb.from('sessions').select('id',{count:'exact',head:true}).gte('started_at',since).eq('completed',true),
+      sb.from('users').select('id',{count:'exact',head:true}),
+      sb.from('subscriptions').select('id',{count:'exact',head:true}).in('status',['active','trialing']),
+      sb.from('share_links').select('id',{count:'exact',head:true}).gte('created_at',since),
+      sb.from('responses').select('question_id,answer').limit(5000),
+      sb.from('questions').select('id,module_id,module_title,order_index,prompt,is_active').order('module_id').order('order_index')
+    ]);
+    const responseRows=responses.data||[];
+    const questionRows=questions.data||[];
+    const dropoff=questionRows.map(question=>{
+      const answered=responseRows.filter(row=>row.question_id===question.id).length;
+      const skipped=responseRows.filter(row=>row.question_id===question.id&&row.answer==='__skip__').length;
+      return {
+        ...question,
+        answered,
+        skipped,
+        completion_rate:sessions.count?Math.round(answered/(sessions.count||1)*100):0
+      };
+    });
+    return {
+      sessions_started:sessions.count||0,
+      completed_sessions:completedSessions.count||0,
+      users:userCount(users),
+      subscribers:subscribers.count||0,
+      shares:shares.count||0,
+      completion_rate:sessions.count?Math.round((completedSessions.count||0)/(sessions.count||1)*100):0,
+      share_rate:sessions.count?Math.round((shares.count||0)/(sessions.count||1)*1000)/10:0,
+      dropoff
+    };
+  }
+
+  function userCount(result){
+    return result.count||0;
   }
 
   async function initAuthUI(){
@@ -536,11 +611,13 @@
     hasActiveSubscription,
     createCheckoutSession,
     openCustomerPortal,
+    isAdmin,
     adminList,
     adminUpsert,
     adminDelete,
     adminUpdateWhere,
     adminDeleteWhere,
+    adminAnalytics,
     initAuthUI,
     localDraft,
     setLocalDraft

@@ -4,7 +4,15 @@
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL editor.
 3. Enable Google OAuth in Supabase Auth if you want Google sign-in.
-4. Add these environment variables in Netlify:
+4. To grant admin access, set the user's auth app metadata role to `admin`. In the SQL editor, replace the email and run:
+
+```sql
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+where email = 'admin@example.com';
+```
+
+5. Add these environment variables in Netlify:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
