@@ -51,3 +51,12 @@ python -m http.server 8000 -d public
 ```
 
 Backend features require Netlify Functions, so use `netlify dev` when testing auth config, checkout, webhooks, and OG images locally.
+
+## PWA
+1. The app shell is cached by `public/service-worker.js`.
+2. Main pages register the worker through `public/js/pyp-pwa.js`.
+3. User data, auth, payments, and Netlify Function calls are network-only or network-first so cached results do not silently override live backend data.
+4. After deployment, verify:
+   - the app can be installed from the browser
+   - `/offline.html` appears when offline and uncached pages are unavailable
+   - `questions.html`, `app.html`, and `share.html` still fetch live Supabase data when online

@@ -2,12 +2,14 @@
   "name": "PYP: Pick Your Politics",
   "short_name": "PYP",
   "description": "Know where you really stand with a clear political profile.",
-  "start_url": "/index.html",
+  "id": "/",
+  "start_url": "/index.html?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0d0f",
   "theme_color": "#185FA5",
+  "categories": ["education", "lifestyle", "news"],
   "icons": [
     {
       "src": "/icons/icon-192.svg",
@@ -20,6 +22,26 @@
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Quiz",
+      "short_name": "Quiz",
+      "url": "/questions.html?source=pwa-shortcut",
+      "description": "Answer questions and update your political profile."
+    },
+    {
+      "name": "View Results",
+      "short_name": "Results",
+      "url": "/app.html#results",
+      "description": "Open your saved PYP results."
+    },
+    {
+      "name": "PYP+ Dashboard",
+      "short_name": "Dashboard",
+      "url": "/app.html#dashboard",
+      "description": "Open trends, retake history, and paid insights."
     }
   ]
 }

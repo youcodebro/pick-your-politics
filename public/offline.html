@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PYP - Offline</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#185FA5"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-family:system-ui,-apple-system,sans-serif;background:#f5f4f0;color:#0d0d0f}
+body{min-height:100vh;display:grid;place-items:center;padding:1.25rem}
+.offline{max-width:420px;width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:1.5rem;box-shadow:0 8px 36px rgba(0,0,0,.1)}
+.mark{width:42px;height:42px;border-radius:12px;background:#E6F1FB;color:#185FA5;display:grid;place-items:center;font-weight:800;margin-bottom:1rem}
+h1{font-size:22px;line-height:1.2;margin-bottom:.5rem}
+p{font-size:14px;line-height:1.6;color:#4a4a52;margin-bottom:1rem}
+.actions{display:flex;gap:.625rem;flex-wrap:wrap}
+button,a{border:0;border-radius:9px;padding:.7rem 1rem;font:inherit;font-size:14px;font-weight:650;text-decoration:none;cursor:pointer}
+button{background:#185FA5;color:#fff}
+a{background:#f1f1ed;color:#333}
+</style>
+</head>
+<body>
+  <main class="offline">
+    <div class="mark">PYP</div>
+    <h1>You are offline</h1>
+    <p>The app shell is available, but live results, auth, payments, and saved profile data need a connection.</p>
+    <div class="actions">
+      <button onclick="location.reload()">Try again</button>
+      <a href="/index.html">Go home</a>
+      <a href="/questions.html">Open quiz</a>
+    </div>
+  </main>
+<script src="/js/pyp-pwa.js"></script>
+</body>
+</html>
