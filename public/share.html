@@ -186,14 +186,12 @@ function loadSharedProfile(row){
 
 async function loadShareToken(){
   const token=new URLSearchParams(location.search).get('token');
-  if(!token||!window.PYP) return;
+  if(!token) return;
   try{
-    const sb=await PYP.supabaseClient();
-    if(!sb) return;
-    const {data,error}=await sb.from('share_links').select('*').eq('token',token).maybeSingle();
-    if(error||!data) return;
+    const res=await fetch(`/.netlify/functions/share-data?token=${encodeURIComponent(token)}`,{headers:{accept:'application/json'}});
+    if(!res.ok) return;
+    const data=await res.json();
     loadSharedProfile(data);
-    sb.from('share_links').update({view_count:(data.view_count||0)+1}).eq('id',data.id).then(()=>{});
   }catch(err){
     console.warn('Could not load shared profile token.',err);
   }

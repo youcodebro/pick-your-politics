@@ -580,7 +580,7 @@ img,svg{transition:none}
           <div class="results-party-row"><span>Independent</span><div class="results-party-track"><div class="results-party-fill" style="width:5%;background:#534AB7"></div></div><strong>5%</strong></div>
         </div>
         <div class="divider"></div>
-        <button class="btn-primary" onclick="show('public-share')"><i class="ti ti-share" style="font-size:14px"></i> Share profile</button>
+        <button class="btn-primary" onclick="createPublicShare()"><i class="ti ti-share" style="font-size:14px"></i> Share profile</button>
         <button class="btn-outline" onclick="show('upgrade')" style="margin-left:.5rem"><i class="ti ti-star" style="font-size:14px"></i> Unlock trends</button>
       </div>
     </div>
@@ -1117,6 +1117,21 @@ async function openBillingPortal(){
     await PYP.openCustomerPortal();
   }catch(err){
     alert(err.message||'Could not open billing portal.');
+  }
+}
+
+async function createPublicShare(){
+  try{
+    const user=await PYP.currentUser();
+    if(!user){
+      show('login-gate');
+      return;
+    }
+    const share=await PYP.createShareLink();
+    await navigator.clipboard?.writeText(share.url).catch(()=>{});
+    window.location.href=share.app_url||`share.html?token=${encodeURIComponent(share.token)}`;
+  }catch(err){
+    alert(err.message||'Could not create share link.');
   }
 }
 

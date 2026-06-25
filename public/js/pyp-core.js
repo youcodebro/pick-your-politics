@@ -471,6 +471,21 @@
     location.href=data.url;
   }
 
+  async function createShareLink(sessionId=null){
+    const user=await currentUser();
+    if(!user) throw new Error('Please sign in before sharing.');
+    const sb=await supabaseClient();
+    const {data:{session}}=await sb.auth.getSession();
+    const res=await fetch('/.netlify/functions/create-share-link',{
+      method:'POST',
+      headers:{'content-type':'application/json',authorization:`Bearer ${session?.access_token||''}`},
+      body:JSON.stringify({session_id:sessionId})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Could not create share link.');
+    return data;
+  }
+
   async function isAdmin(){
     const user=await currentUser();
     return user?.app_metadata?.role==='admin';
@@ -611,6 +626,7 @@
     hasActiveSubscription,
     createCheckoutSession,
     openCustomerPortal,
+    createShareLink,
     isAdmin,
     adminList,
     adminUpsert,

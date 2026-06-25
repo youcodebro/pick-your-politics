@@ -60,3 +60,12 @@ Backend features require Netlify Functions, so use `netlify dev` when testing au
    - the app can be installed from the browser
    - `/offline.html` appears when offline and uncached pages are unavailable
    - `questions.html`, `app.html`, and `share.html` still fetch live Supabase data when online
+
+## Public Share / OG Images
+1. Signed-in users create share links through `/.netlify/functions/create-share-link`.
+2. The public URL should be the Netlify Function URL returned by the API:
+   - `/.netlify/functions/share?token=...`
+3. That function renders dynamic OG tags for crawlers and redirects real visitors into:
+   - `/share.html?token=...`
+4. `/.netlify/functions/share-data?token=...` returns only public-safe snapshot data and increments view count.
+5. `/.netlify/functions/og-image?token=...` renders the social preview image from the saved `share_links` snapshot.
