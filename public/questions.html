@@ -362,13 +362,21 @@ img,svg,canvas,.progress-fill,.pw-seg,.opt-indicator{transition:none!important}
 
 /* ─── RESPONSIVE ─── */
 @media(max-width:660px){
+  .q-header-inner{padding:.75rem .875rem .45rem;gap:.5rem}
+  .q-progress-wrap{padding:.3rem .875rem .55rem}
+  .q-body{padding:1rem .875rem 6rem}
   .q-layout{grid-template-columns:1fr}
   .q-sidebar{display:none}
-  .party-widget{right:.75rem;bottom:.75rem;min-width:180px}
+  .q-card{padding:1.125rem;border-radius:12px}
+  .q-prompt{font-size:17px;line-height:1.55}
+  .party-widget{right:.75rem;bottom:.75rem;min-width:180px;max-width:calc(100vw - 1.5rem)}
+  .mod-drawer{padding:1rem 1rem 2rem;max-height:82vh}
+  .drawer-mod{padding:.7rem .8rem}
 }
 @media(max-width:380px){
   .opts-binary{grid-template-columns:1fr}
-  .party-widget{right:.5rem;bottom:.5rem;min-width:160px}
+  .party-widget{right:.5rem;bottom:.5rem;min-width:160px;max-width:calc(100vw - 1rem)}
+  .q-logo{display:none}
 }
 </style>
 </head>
@@ -532,12 +540,16 @@ let S={
   modIdx:0,qIdx:0,
   scores:{D:0,R:0,L:0,G:0,I:0},
   skips:3,
+  answeredCount:0,
+  completedModules:[],
   helpOpen:false,
   widgetOpen:true,
   busy:false
 };
 
 const PYP_MODE=new URLSearchParams(location.search).get('mode')||'daily';
+const DAILY_LIMIT=5;
+function isDailyMode(){return PYP_MODE!=='full';}
 
 async function initQuestionBackend(){
   if(!window.PYP) return;
@@ -549,6 +561,14 @@ async function initQuestionBackend(){
     }
     if(Number.isInteger(progress?.skips_used)){
       S.skips=Math.max(0,3-progress.skips_used);
+    }
+    if(Number.isInteger(progress?.questions_answered)){
+      S.answeredCount=progress.questions_answered;
+    }else if(Array.isArray(progress?.answers)){
+      S.answeredCount=progress.answers.length;
+    }
+    if(Array.isArray(progress?.completed_modules)){
+      S.completedModules=progress.completed_modules;
     }
     if(progress?.current_module_id){
       const idx=MODS.findIndex(m=>m.id===progress.current_module_id);
@@ -563,8 +583,12 @@ async function initQuestionBackend(){
         S.qIdx=Math.max(0,Math.min(progress.current_question_index,currentLen-1));
       }
     }
-    await PYP.startSession({mode:PYP_MODE,moduleId:MODS[S.modIdx].id});
     renderAll();
+    if(isDailyMode()&&(S.answeredCount>=DAILY_LIMIT||progress?.completed||progress?.status==='complete')){
+      showDailyComplete();
+      return;
+    }
+    await PYP.startSession({mode:PYP_MODE,moduleId:MODS[S.modIdx].id});
   }catch(err){
     console.warn('PYP backend unavailable; using local draft.',err);
   }
@@ -629,7 +653,9 @@ function topParty(){
 function renderHeader(){
   const mod=MODS[S.modIdx];
   const total=mod.questions.length;
-  const pct=Math.round(S.qIdx/total*100);
+  const pct=isDailyMode()
+    ? Math.min(100,Math.round(S.answeredCount/DAILY_LIMIT*100))
+    : Math.round(S.qIdx/total*100);
 
   const hdrMod=document.getElementById('hdr-module');
   const hdrCnt=document.getElementById('hdr-counter');
@@ -637,14 +663,18 @@ function renderHeader(){
   const progFill=document.getElementById('prog-fill');
 
   if(hdrMod) hdrMod.textContent=mod.title;
-  if(hdrCnt) hdrCnt.textContent=`Question ${S.qIdx+1} of ${total}`;
+  if(hdrCnt) hdrCnt.textContent=isDailyMode()
+    ? `Daily Dose ${Math.min(S.answeredCount+1,DAILY_LIMIT)} of ${DAILY_LIMIT}`
+    : `Question ${S.qIdx+1} of ${total}`;
   if(hdrPct) hdrPct.textContent=pct+'%';
   if(progFill) progFill.style.width=pct+'%';
 
   const dotsEl=document.getElementById('step-dots');
   if(dotsEl){
-    dotsEl.innerHTML=Array.from({length:total},(_,i)=>{
-      const cls=i<S.qIdx?'done':i===S.qIdx?'current':'future';
+    const dotTotal=isDailyMode()?DAILY_LIMIT:total;
+    const current=isDailyMode()?S.answeredCount:S.qIdx;
+    dotsEl.innerHTML=Array.from({length:dotTotal},(_,i)=>{
+      const cls=i<current?'done':i===current?'current':'future';
       return`<div class="step-dot ${cls}"></div>`;
     }).join('');
   }
@@ -720,7 +750,7 @@ function renderSidebar(){
   const el=document.getElementById('mod-rows');
   if(!el) return;
   el.innerHTML=ALL_MOD_TITLES.map((t,i)=>{
-    const done=i<S.modIdx,active=i===S.modIdx;
+    const done=S.completedModules.includes(MODS[i]?.id),active=i===S.modIdx;
     const cls=done?'done':active?'active':'';
     const check=done?`<i class="ti ti-check" style="font-size:9px;color:var(--blue)" aria-hidden="true"></i>`:'';
     return`<div class="mod-row ${cls}">
@@ -796,6 +826,7 @@ function answer(val){
   }
 
   persistQuestionAnswer(val,q);
+  S.answeredCount++;
 
   S.busy=true;
   const delay=val==='__skip__'||val==='__not_sure__'?0:340;
@@ -806,6 +837,11 @@ function answer(val){
 function advance(){
   const mod=MODS[S.modIdx];
   const wrap=document.getElementById('q-slide-wrap');
+
+  if(isDailyMode()&&S.answeredCount>=DAILY_LIMIT){
+    showDailyComplete();
+    return;
+  }
 
   if(S.qIdx+1<mod.questions.length){
     /* slide out */
@@ -834,15 +870,41 @@ function advance(){
   }
 }
 
+async function showDailyComplete(){
+  if(window.PYP) PYP.completeSession({partyScores:S.scores}).catch(err=>console.warn('Could not complete Daily Dose.',err));
+  const user=window.PYP?await PYP.currentUser().catch(()=>null):null;
+  const wrap=document.getElementById('q-slide-wrap');
+  if(!wrap) return;
+  wrap.innerHTML=`
+    <div class="q-card" style="text-align:center;padding:2.25rem 1.5rem">
+      <div class="complete-icon"><i class="ti ti-sparkles" aria-hidden="true"></i></div>
+      <h2 style="font-size:18px;font-weight:600;margin-bottom:.375rem;color:var(--text)">Daily Dose complete</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.25rem">${DAILY_LIMIT} questions saved</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Your profile is ready to reveal.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="complete-btn" onclick="window.location.href='app.html#${user?'results':'login-gate'}'">
+          <i class="ti ti-chart-pie" style="font-size:13px"></i> ${user?'View results':'Save and reveal results'}
+        </button>
+        <button class="complete-btn-outline" onclick="window.location.href='questions.html?mode=full'">
+          Continue full run
+        </button>
+      </div>
+    </div>`;
+  renderHeader();
+  renderSidebar();
+  S.busy=false;
+}
+
 /* ─── MODULE COMPLETE ─── */
 function showComplete(){
   persistModuleComplete();
+  S.completedModules=Array.from(new Set([...S.completedModules,MODS[S.modIdx].id]));
   const wrap=document.getElementById('q-slide-wrap');
   if(!wrap) return;
   wrap.innerHTML=`
     <div class="q-card" style="text-align:center;padding:2.25rem 1.5rem">
       <div class="complete-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
-      <h2 style="font-size:18px;font-weight:600;margin-bottom:.375rem;color:var(--text)">${MODS[S.modIdx].title} — done</h2>
+      <h2 style="font-size:18px;font-weight:600;margin-bottom:.375rem;color:var(--text)">${MODS[S.modIdx].title} - done</h2>
       <p style="font-size:13px;color:var(--text2);margin-bottom:.25rem">${MODS[S.modIdx].questions.length} questions answered</p>
       <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Your profile just got sharper</p>
       <div style="display:inline-flex;align-items:center;gap:5px;background:var(--streak-bg);color:var(--streak-text);border-radius:99px;padding:3px 12px;font-size:12px;font-weight:600;margin-bottom:1.375rem">
@@ -850,7 +912,7 @@ function showComplete(){
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="complete-btn" onclick="nextMod()">
-          <i class="ti ti-arrow-right" style="font-size:13px"></i> Next module
+          <i class="ti ti-arrow-right" style="font-size:13px"></i> ${S.modIdx+1<MODS.length?'Next module':'Finish full run'}
         </button>
         <button class="complete-btn-outline" onclick="window.location.href='app.html#results'">
           View results so far
@@ -885,7 +947,9 @@ function goBack(){
 
 /* ─── DEMO MODULE LOADER ─── */
 function loadMod(idx){
+  if(S.busy) return;
   S.modIdx=idx;S.qIdx=0;S.busy=false;
+  if(window.PYP) PYP.setLocalDraft({current_module_id:MODS[S.modIdx].id,current_question_index:0,module_id:MODS[S.modIdx].id});
   buildDrawer();
   renderAll();
 }
@@ -916,6 +980,7 @@ function closeModDrawer(){
   document.body.style.overflow='';
 }
 function toggleModDrawer(){
+  if(S.busy) return;
   const open=document.getElementById('mod-drawer').classList.contains('open');
   open?closeModDrawer():openModDrawer();
 }
@@ -937,6 +1002,9 @@ function loadModFromDrawer(idx){
   loadMod(idx);
   closeModDrawer();
 }
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape') closeModDrawer();
+});
 </script>
 
 <!-- ─── MODULE DRAWER ─── -->

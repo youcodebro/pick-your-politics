@@ -320,6 +320,37 @@
     return {local:false,moduleTitle};
   }
 
+  async function completeSession({partyScores=null}={}){
+    const draft=localDraft();
+    setLocalDraft({
+      status:'complete',
+      party_scores:partyScores||draft.party_scores||{},
+      completed_at:nowIso()
+    });
+    if(draft.local) return {local:true};
+    const sb=await supabaseClient();
+    const user=await currentUser();
+    if(!sb||!user||!draft.session_id) return {local:!sb||!user};
+    const {data:profile}=await sb.from('users').select('streak_count,streak_last_date').eq('id',user.id).maybeSingle();
+    const today=new Date().toISOString().slice(0,10);
+    const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const nextStreak=profile?.streak_last_date===today
+      ? (profile?.streak_count||1)
+      : profile?.streak_last_date===yesterday
+        ? (profile?.streak_count||0)+1
+        : 1;
+    await sb.from('users').update({
+      streak_count:nextStreak,
+      streak_last_date:today
+    }).eq('id',user.id);
+    await sb.from('sessions').update({
+      completed:true,
+      scores:partyScores||draft.party_scores||{},
+      completed_at:nowIso()
+    }).eq('id',draft.session_id).eq('user_id',user.id);
+    return {local:false};
+  }
+
   async function loadProgress(){
     const sb=await supabaseClient();
     const user=await currentUser();
@@ -619,6 +650,7 @@
     startSession,
     saveAnswer,
     completeModule,
+    completeSession,
     loadProgress,
     loadResults,
     loadDashboard,
