@@ -1,5 +1,5 @@
 -- RLS policies for the decided PYP schema:
--- users, sessions, responses, questions, share_links, subscriptions
+-- users, sessions, responses, questions, share_links, subscriptions, stripe_webhook_events
 --
 -- Run this after the table-name migration has completed.
 -- Admin access is controlled by Supabase auth app_metadata:
@@ -19,6 +19,7 @@ alter table public.responses enable row level security;
 alter table public.questions enable row level security;
 alter table public.share_links enable row level security;
 alter table public.subscriptions enable row level security;
+alter table public.stripe_webhook_events enable row level security;
 
 -- USERS
 drop policy if exists "users own read" on public.users;
@@ -170,4 +171,11 @@ drop policy if exists "subscriptions admin delete" on public.subscriptions;
 create policy "subscriptions admin delete"
 on public.subscriptions
 for delete
+using (public.is_admin());
+
+-- STRIPE WEBHOOK EVENTS
+drop policy if exists "stripe webhook events admin read" on public.stripe_webhook_events;
+create policy "stripe webhook events admin read"
+on public.stripe_webhook_events
+for select
 using (public.is_admin());

@@ -31,7 +31,8 @@ where email = 'admin@example.com';
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
-5. In local development, forward Stripe events to Netlify Dev:
+5. Webhook deliveries are recorded in `stripe_webhook_events`, so Stripe retries are safe and duplicate events are ignored.
+6. In local development, forward Stripe events to Netlify Dev:
 
 ```powershell
 stripe listen --forward-to localhost:8888/.netlify/functions/stripe-webhook

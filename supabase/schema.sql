@@ -8,6 +8,7 @@ create extension if not exists "pgcrypto";
 drop table if exists public.responses cascade;
 drop table if exists public.sessions cascade;
 drop table if exists public.share_links cascade;
+drop table if exists public.stripe_webhook_events cascade;
 drop table if exists public.subscriptions cascade;
 drop table if exists public.questions cascade;
 drop table if exists public.users cascade;
@@ -146,12 +147,27 @@ create index subscriptions_status_idx on public.subscriptions(status);
 create trigger touch_subscriptions_updated_at before update on public.subscriptions
 for each row execute function public.touch_updated_at();
 
+create table public.stripe_webhook_events (
+  id text primary key,
+  event_type text not null,
+  status text not null default 'processing'
+    check (status in ('processing','processed','failed','ignored')),
+  error text,
+  created_at timestamptz not null default now(),
+  processed_at timestamptz
+);
+
+create index stripe_webhook_events_event_type_idx on public.stripe_webhook_events(event_type);
+create index stripe_webhook_events_status_idx on public.stripe_webhook_events(status);
+create index stripe_webhook_events_created_at_idx on public.stripe_webhook_events(created_at);
+
 alter table public.users enable row level security;
 alter table public.sessions enable row level security;
 alter table public.responses enable row level security;
 alter table public.questions enable row level security;
 alter table public.share_links enable row level security;
 alter table public.subscriptions enable row level security;
+alter table public.stripe_webhook_events enable row level security;
 
 create policy "users own read" on public.users for select
 using (auth.uid() = id or public.is_admin());
@@ -209,6 +225,9 @@ create policy "subscriptions admin update" on public.subscriptions for update
 using (public.is_admin())
 with check (public.is_admin());
 create policy "subscriptions admin delete" on public.subscriptions for delete
+using (public.is_admin());
+
+create policy "stripe webhook events admin read" on public.stripe_webhook_events for select
 using (public.is_admin());
 
 create or replace view public.session_party_scores

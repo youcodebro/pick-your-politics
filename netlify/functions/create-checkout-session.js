@@ -76,7 +76,8 @@ exports.handler = async (event) => {
       client_reference_id: user.id,
       'metadata[user_id]': user.id,
       'metadata[plan]': plan,
-      'subscription_data[metadata][user_id]': user.id
+      'subscription_data[metadata][user_id]': user.id,
+      'subscription_data[metadata][plan]': plan
     });
 
     return { statusCode: 200, body: JSON.stringify({ url: session.url, mode: 'checkout' }) };
