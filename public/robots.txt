@@ -1,7 +1,18 @@
 User-agent: *
 Allow: /
 Disallow: /app.html
-Disallow: /share.html
-Disallow: /.netlify/functions/
 
 Sitemap: https://pickyourpolitics.com/sitemap.xml
+
+# Explicitly allow known AI crawlers for GEO visibility
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /

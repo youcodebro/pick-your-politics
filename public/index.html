@@ -106,13 +106,13 @@ img,svg,canvas{transition:none!important}
 @keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 .hero-h1{font-size:clamp(42px,6vw,76px);font-weight:700;line-height:1.05;letter-spacing:-.03em;text-align:center}
 .h1-line1{display:block;color:var(--text)}
-.h1-anim{display:block;position:relative;overflow:hidden;height:1.12em}
-.h1-word{position:absolute;left:0;top:0;color:var(--blue-mid);white-space:nowrap}
+.h1-anim{display:block;position:relative;overflow:hidden;height:1.12em;min-width:11.5em;margin:0 auto}
+.h1-word{position:absolute;left:50%;top:0;transform:translateX(-50%);color:var(--blue-mid);white-space:nowrap}
 .h1-word.visible{transform:translateY(0);opacity:1}
 .h1-word.entering{animation:wIn .5s cubic-bezier(.16,1,.3,1) forwards}
 .h1-word.leaving{animation:wOut .35s cubic-bezier(.4,0,1,1) forwards}
-@keyframes wIn{from{transform:translateY(65%);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes wOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-65%);opacity:0}}
+@keyframes wIn{from{transform:translate(-50%,65%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+@keyframes wOut{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-65%);opacity:0}}
 .hero-tag{font-size:clamp(16px,1.6vw,20px);color:var(--text2);line-height:1.7;max-width:580px;text-align:center}
 .hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
 .hero-trust{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;justify-content:center}
@@ -163,6 +163,7 @@ img,svg,canvas{transition:none!important}
 .step-num{font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
 .step-icon{width:40px;height:40px;border-radius:9px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--blue-mid);margin-bottom:.875rem}
 .step-title{font-size:15px;font-weight:600;margin-bottom:.375rem;color:var(--text)}
+.step-title,.mod-title,.mode-title,.demo-screen-title{line-height:1.25;margin-top:0}
 .step-desc{font-size:13px;color:var(--text2);line-height:1.6}
 .mods-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:2rem}
 .mod-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s;text-decoration:none;display:block;color:var(--text)}
@@ -327,9 +328,9 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
   <h2 class="sec-title">From question to clarity in three steps</h2>
   <p class="sec-sub">PYP isn't a personality quiz. It's a structured political self-assessment built to show nuance — not sort you into a box.</p>
   <div class="steps-grid">
-    <div class="step-card"><div class="step-num">Step 01</div><div class="step-icon"><i class="ti ti-user-circle" aria-hidden="true"></i></div><div class="step-title">Build your avatar</div><div class="step-desc">Choose a base style, skin tone, hair, and presentation. Your avatar evolves as you answer — unlocking details that reflect your political profile.</div></div>
-    <div class="step-card"><div class="step-num">Step 02</div><div class="step-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><div class="step-title">Answer questions</div><div class="step-desc">5 questions a day or a full module. Every question has a neutral explainer. Say "not sure" or skip — no pressure to have an opinion on everything.</div></div>
-    <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><div class="step-title">Get your profile</div><div class="step-desc">See your party mix, issue-by-issue positions, a consistency score, and insights sharp enough to share — and spark a real conversation.</div></div>
+    <div class="step-card"><div class="step-num">Step 01</div><div class="step-icon"><i class="ti ti-user-circle" aria-hidden="true"></i></div><h3 class="step-title">Build your avatar</h3><div class="step-desc">Choose a base style, skin tone, hair, and presentation. Your avatar evolves as you answer — unlocking details that reflect your political profile.</div></div>
+    <div class="step-card"><div class="step-num">Step 02</div><div class="step-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><h3 class="step-title">Answer questions</h3><div class="step-desc">5 questions a day or a full module. Every question has a neutral explainer. Say "not sure" or skip — no pressure to have an opinion on everything.</div></div>
+    <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><h3 class="step-title">Get your profile</h3><div class="step-desc">See your party mix, issue-by-issue positions, a consistency score, and insights sharp enough to share — and spark a real conversation.</div></div>
   </div>
 </section>
 
@@ -339,14 +340,14 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
     <p class="sec-ey">8 topic modules</p>
     <h2 class="sec-title">Every issue that matters</h2>
     <div class="mods-grid">
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="mod-title">Economy &amp; Taxes</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div><div class="mod-title">Privacy &amp; Tech</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-heart-rate-monitor" aria-hidden="true"></i></div><div class="mod-title">Healthcare</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-school" aria-hidden="true"></i></div><div class="mod-title">Education &amp; Family</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-gavel" aria-hidden="true"></i></div><div class="mod-title">Crime &amp; Justice</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-world" aria-hidden="true"></i></div><div class="mod-title">Immigration</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div><div class="mod-title">Climate &amp; Energy</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
-      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-globe" aria-hidden="true"></i></div><div class="mod-title">Foreign Policy</div><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><h3 class="mod-title">Economy &amp; Taxes</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div><h3 class="mod-title">Privacy &amp; Tech</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-heart-rate-monitor" aria-hidden="true"></i></div><h3 class="mod-title">Healthcare</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-school" aria-hidden="true"></i></div><h3 class="mod-title">Education &amp; Family</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-gavel" aria-hidden="true"></i></div><h3 class="mod-title">Crime &amp; Justice</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-world" aria-hidden="true"></i></div><h3 class="mod-title">Immigration</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div><h3 class="mod-title">Climate &amp; Energy</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
+      <a href="questions.html" class="mod-card"><div class="mod-icon"><i class="ti ti-globe" aria-hidden="true"></i></div><h3 class="mod-title">Foreign Policy</h3><div class="mod-meta"><i class="ti ti-list-check" style="font-size:11px"></i> 8 questions</div></a>
     </div>
   </div>
 </section>
@@ -359,7 +360,7 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
     <a href="questions.html" class="mode-card feat">
       <div class="mode-badge">Recommended</div>
       <div class="mode-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
-      <div class="mode-title">Daily Dose</div>
+      <h3 class="mode-title">Daily Dose</h3>
       <p class="mode-desc">5 questions every day. Build your profile gradually, keep a streak alive, and watch your political picture sharpen over time.</p>
       <div class="mode-feats">
         <div class="mode-feat"><i class="ti ti-check"></i> Exactly 5 questions/day</div>
@@ -370,7 +371,7 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
     </a>
     <a href="questions.html" class="mode-card">
       <div class="mode-icon"><i class="ti ti-books" aria-hidden="true"></i></div>
-      <div class="mode-title">Full Run</div>
+      <h3 class="mode-title">Full Run</h3>
       <p class="mode-desc">Pick a topic and go deep. Complete a full module in one session for immediate, comprehensive results on that issue area.</p>
       <div class="mode-feats">
         <div class="mode-feat"><i class="ti ti-check"></i> 8 questions per module</div>
@@ -389,14 +390,14 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
     <h2 class="sec-title">Explore the full app</h2>
     <p class="sec-sub" style="margin-bottom:2rem">Click through every screen of the PYP experience — questions, results, login gate, upgrade, admin, and more.</p>
     <div class="demo-grid">
-      <a href="questions.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><div class="demo-screen-title">Question screen</div><div class="demo-screen-desc">Sticky header, step dots, live party widget, flash-advance answers, light/dark mode.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#login-gate" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-eye" aria-hidden="true"></i></div><div class="demo-screen-title">Login gate</div><div class="demo-screen-desc">Modal over blurred results teaser. Google OAuth + magic link. Conversion-optimized.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#module-complete" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-check" aria-hidden="true"></i></div><div class="demo-screen-title">Module complete</div><div class="demo-screen-desc">Celebration moment with streak, party shift, module progress chips.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#results" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><div class="demo-screen-title">Results + insights</div><div class="demo-screen-desc">Party breakdown, issue positions, swipeable insight cards, upgrade strip.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#upgrade" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-star" aria-hidden="true"></i></div><div class="demo-screen-title">PYP+ upgrade</div><div class="demo-screen-desc">Pricing page with monthly/yearly toggle, feature comparison, $9/mo · $79/yr.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#dashboard" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-trending-up" aria-hidden="true"></i></div><div class="demo-screen-title">PYP+ dashboard</div><div class="demo-screen-desc">Trend charts, consistency ring, retake history, module breakdown (paid tier).</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="share.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-share" aria-hidden="true"></i></div><div class="demo-screen-title">Public share page</div><div class="demo-screen-desc">Partiful-style immersive profile view. Blurred insights. Viral "compare with friend" CTA.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
-      <a href="app.html#admin" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-settings" aria-hidden="true"></i></div><div class="demo-screen-title">Admin panel</div><div class="demo-screen-desc">Modules, questions, scoring editor, drop-off analytics, user management.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="questions.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><h3 class="demo-screen-title">Question screen</h3><div class="demo-screen-desc">Sticky header, step dots, live party widget, flash-advance answers, light/dark mode.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#login-gate" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-eye" aria-hidden="true"></i></div><h3 class="demo-screen-title">Login gate</h3><div class="demo-screen-desc">Modal over blurred results teaser. Google OAuth + magic link. Conversion-optimized.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#module-complete" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-check" aria-hidden="true"></i></div><h3 class="demo-screen-title">Module complete</h3><div class="demo-screen-desc">Celebration moment with streak, party shift, module progress chips.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#results" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div><h3 class="demo-screen-title">Results + insights</h3><div class="demo-screen-desc">Party breakdown, issue positions, swipeable insight cards, upgrade strip.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#upgrade" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-star" aria-hidden="true"></i></div><h3 class="demo-screen-title">PYP+ upgrade</h3><div class="demo-screen-desc">Pricing page with monthly/yearly toggle, feature comparison, $9/mo · $79/yr.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#dashboard" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-trending-up" aria-hidden="true"></i></div><h3 class="demo-screen-title">PYP+ dashboard</h3><div class="demo-screen-desc">Trend charts, consistency ring, retake history, module breakdown (paid tier).</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="share.html" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-share" aria-hidden="true"></i></div><h3 class="demo-screen-title">Public share page</h3><div class="demo-screen-desc">Partiful-style immersive profile view. Blurred insights. Viral "compare with friend" CTA.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
+      <a href="app.html#admin" class="demo-screen-card"><div class="demo-screen-icon"><i class="ti ti-settings" aria-hidden="true"></i></div><h3 class="demo-screen-title">Admin panel</h3><div class="demo-screen-desc">Modules, questions, scoring editor, drop-off analytics, user management.</div><div class="demo-screen-link"><i class="ti ti-arrow-right" style="font-size:13px"></i> Open screen</div></a>
     </div>
   </div>
 </section>
