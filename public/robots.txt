@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app.html
+Disallow: /share.html
+Disallow: /.netlify/functions/
+
+Sitemap: https://pickyourpolitics.com/sitemap.xml

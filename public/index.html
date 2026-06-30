@@ -3,13 +3,60 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>PYP: Pick Your Politics</title>
-<meta name="description" content="Know where you really stand. PYP gives you a clear, nuanced picture of your political identity — not a label, not a tribe."/>
-<meta property="og:title" content="PYP: Pick Your Politics"/>
-<meta property="og:description" content="Know your views. Own your voice. Free political questionnaire."/>
+<title>PYP: Pick Your Politics - Know Your Views, Not Your Label</title>
+<meta name="description" content="A free 3-minute political questionnaire that shows your real party mix, not a single label. 64 questions, 8 topics, no login required to start."/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://pickyourpolitics.com/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://pickyourpolitics.com/"/>
+<meta property="og:title" content="PYP: Pick Your Politics - Know Your Views, Not Your Label"/>
+<meta property="og:description" content="A free 3-minute political questionnaire that shows your real party mix, not a single label."/>
+<meta property="og:image" content="https://pickyourpolitics.com/.netlify/functions/og-image?name=PYP&amp;top=Know%20Your%20Views"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:site_name" content="PYP"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="PYP: Pick Your Politics"/>
+<meta name="twitter:description" content="Know your views. Own your voice. Free 3-minute political questionnaire."/>
+<meta name="twitter:image" content="https://pickyourpolitics.com/.netlify/functions/og-image?name=PYP&amp;top=Know%20Your%20Views"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#185FA5"/>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"WebSite",
+      "@id":"https://pickyourpolitics.com/#website",
+      "name":"PYP: Pick Your Politics",
+      "url":"https://pickyourpolitics.com/",
+      "description":"PYP is a free political questionnaire that shows a person's party mix across eight topics instead of assigning one label.",
+      "inLanguage":"en-US",
+      "potentialAction":{"@type":"Action","name":"Take the PYP political quiz","target":"https://pickyourpolitics.com/questions.html"}
+    },
+    {
+      "@type":"SoftwareApplication",
+      "@id":"https://pickyourpolitics.com/#app",
+      "name":"PYP: Pick Your Politics",
+      "applicationCategory":"EducationalApplication",
+      "operatingSystem":"Web",
+      "url":"https://pickyourpolitics.com/",
+      "description":"A free 3-minute political questionnaire with 64 questions across 8 topics, live party-mix scoring, and shareable results.",
+      "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+    },
+    {
+      "@type":"FAQPage",
+      "@id":"https://pickyourpolitics.com/#faq",
+      "mainEntity":[
+        {"@type":"Question","name":"What is PYP?","acceptedAnswer":{"@type":"Answer","text":"PYP is a political questionnaire that maps your views into a party mix and issue-by-issue breakdown instead of giving you one fixed label."}},
+        {"@type":"Question","name":"How long does PYP take?","acceptedAnswer":{"@type":"Answer","text":"The Daily Dose takes about 3 minutes. The full run includes 64 questions across 8 issue modules."}},
+        {"@type":"Question","name":"Do I need an account to start?","acceptedAnswer":{"@type":"Answer","text":"No. You can start answering questions without an account. Sign-in is used to save results, sync progress, and unlock advanced features."}}
+      ]
+    }
+  ]
+}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 [data-theme="light"]{--bg:#f5f4f0;--surface:#fff;--surface2:rgba(0,0,0,.03);--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);--text:#0d0d0f;--text2:#4a4a52;--text3:#888790;--nav-bg:rgba(245,244,240,.94);--blue:#185FA5;--blue-bg:#E6F1FB;--blue-dark:#0C447C;--blue-text:#0C447C;--blue-mid:#185FA5;--green:#3B6D11;--green-bg:#EAF3DE;--amber:#BA7517;--amber-bg:#FAEEDA;--red:#A32D2D;--red-bg:#FCEBEB;--purple:#534AB7;--track:rgba(0,0,0,.07);--shadow:0 2px 16px rgba(0,0,0,.07);--shadow-lg:0 8px 48px rgba(0,0,0,.13);--toggle-bg:#e0dfd9;--dim:rgba(0,0,0,.5);--texture-color:#0d0d0f;--texture-op:.025;--capitol-op:.07;--dem:#185FA5;--rep:#A32D2D;--lib:#BA7517;--grn:#3B6D11;--ind:#534AB7}
@@ -162,6 +209,11 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
 .footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
 .footer-link{font-size:12px;color:var(--text3)}
 .footer-copy{font-size:12px;color:var(--text3)}
+.seo-faq{position:relative;z-index:1;padding:4rem 4rem;border-top:1px solid var(--border)}
+.seo-faq-grid{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.seo-faq-item{border-top:1px solid var(--border);padding-top:1rem}
+.seo-faq-item h2{font-size:15px;margin-bottom:.5rem;color:var(--text)}
+.seo-faq-item p{font-size:13px;line-height:1.65;color:var(--text2)}
 
 @media(max-width:900px){
   .hero-section{grid-template-columns:1fr;min-height:auto}
@@ -172,12 +224,13 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
   .stat-div{display:none}
   .lsec{padding:3rem 1.5rem}
   .lsec.alt{padding:3rem 1.5rem}
-  .steps-grid,.modes-grid,.pricing-grid,.demo-grid{grid-template-columns:1fr}
+  .steps-grid,.modes-grid,.pricing-grid,.demo-grid,.seo-faq-grid{grid-template-columns:1fr}
   .mods-grid{grid-template-columns:repeat(2,1fr)}
   footer{padding:1.5rem;flex-direction:column;align-items:flex-start}
   .nav-links{display:none}
   .nav-mob{display:block}
   .demo-section{padding:3rem 1.5rem}
+  .seo-faq{padding:3rem 1.5rem}
 }
 @media(max-width:480px){
   .hero-h1{font-size:28px}
@@ -382,6 +435,23 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
         <div class="pc-feat"><i class="ti ti-check y"></i>High-res share cards</div>
       </div>
       <a href="app.html#upgrade" class="btn-blue full">Upgrade to PYP+</a>
+    </div>
+  </div>
+</section>
+
+<section class="seo-faq" id="faq" aria-labelledby="faq-title">
+  <div class="seo-faq-grid">
+    <div class="seo-faq-item">
+      <h2 id="faq-title">What is PYP?</h2>
+      <p>PYP is a political questionnaire that maps your views into a party mix and issue-by-issue breakdown instead of giving you one fixed label.</p>
+    </div>
+    <div class="seo-faq-item">
+      <h2>How long does it take?</h2>
+      <p>The Daily Dose takes about 3 minutes. The full run includes 64 questions across 8 issue modules, including economy, healthcare, immigration, and climate.</p>
+    </div>
+    <div class="seo-faq-item">
+      <h2>Do I need an account?</h2>
+      <p>No. You can start without an account. Sign-in is used to save results, sync progress, and unlock advanced PYP+ dashboard features.</p>
     </div>
   </div>
 </section>
