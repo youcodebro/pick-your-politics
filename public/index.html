@@ -27,31 +27,31 @@
   "@context":"https://schema.org",
   "@graph":[
     {
-      "@type":"WebSite",
-      "@id":"https://pickyourpolitics.com/#website",
+      "@type":"WebApplication",
+      "@id":"https://pickyourpolitics.com/#webapp",
       "name":"PYP: Pick Your Politics",
-      "url":"https://pickyourpolitics.com/",
-      "description":"PYP is a free political questionnaire that shows a person's party mix across eight topics instead of assigning one label.",
-      "inLanguage":"en-US",
-      "potentialAction":{"@type":"Action","name":"Take the PYP political quiz","target":"https://pickyourpolitics.com/questions.html"}
+      "alternateName":"PYP",
+      "url":"https://pickyourpolitics.com",
+      "applicationCategory":"LifestyleApplication",
+      "operatingSystem":"Any (Web, PWA)",
+      "description":"A free political questionnaire that maps your views across 64 questions and 8 issue areas, showing a percentage-based party mix instead of a single label.",
+      "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
     },
     {
-      "@type":"SoftwareApplication",
-      "@id":"https://pickyourpolitics.com/#app",
-      "name":"PYP: Pick Your Politics",
-      "applicationCategory":"EducationalApplication",
-      "operatingSystem":"Web",
-      "url":"https://pickyourpolitics.com/",
-      "description":"A free 3-minute political questionnaire with 64 questions across 8 topics, live party-mix scoring, and shareable results.",
-      "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+      "@type":"Organization",
+      "@id":"https://pickyourpolitics.com/#organization",
+      "name":"PYP",
+      "url":"https://pickyourpolitics.com",
+      "logo":"https://pickyourpolitics.com/icons/icon-512.svg"
     },
     {
       "@type":"FAQPage",
       "@id":"https://pickyourpolitics.com/#faq",
       "mainEntity":[
-        {"@type":"Question","name":"What is PYP?","acceptedAnswer":{"@type":"Answer","text":"PYP is a political questionnaire that maps your views into a party mix and issue-by-issue breakdown instead of giving you one fixed label."}},
-        {"@type":"Question","name":"How long does PYP take?","acceptedAnswer":{"@type":"Answer","text":"The Daily Dose takes about 3 minutes. The full run includes 64 questions across 8 issue modules."}},
-        {"@type":"Question","name":"Do I need an account to start?","acceptedAnswer":{"@type":"Answer","text":"No. You can start answering questions without an account. Sign-in is used to save results, sync progress, and unlock advanced features."}}
+        {"@type":"Question","name":"What is PYP: Pick Your Politics?","acceptedAnswer":{"@type":"Answer","text":"PYP is a free political questionnaire that asks 64 neutral, fact-based questions across 8 topics and shows your results as a percentage-based party mix rather than assigning you a single label."}},
+        {"@type":"Question","name":"Is PYP biased toward a political party?","acceptedAnswer":{"@type":"Answer","text":"No. PYP's questions are written to be neutral and fact-based. The app does not promote any party and shows a percentage mix across five party alignments instead of a single label."}},
+        {"@type":"Question","name":"Do I need to create an account to take the PYP quiz?","acceptedAnswer":{"@type":"Answer","text":"No login is required to start. PYP only asks you to sign in after completing the first 5 questions, called Daily Dose, in order to save and reveal your full results."}},
+        {"@type":"Question","name":"How long does the PYP questionnaire take?","acceptedAnswer":{"@type":"Answer","text":"The Daily Dose mode takes about 3 minutes for 5 questions per day. A Full Run through one topic module of 8 questions takes about 8 minutes."}}
       ]
     }
   ]
@@ -443,15 +443,15 @@ footer{position:relative;z-index:1;padding:2rem 4rem;border-top:1px solid var(--
   <div class="seo-faq-grid">
     <div class="seo-faq-item">
       <h2 id="faq-title">What is PYP?</h2>
-      <p>PYP is a political questionnaire that maps your views into a party mix and issue-by-issue breakdown instead of giving you one fixed label.</p>
+      <p>PYP is a free political questionnaire with 64 neutral questions across 8 topics. It shows a percentage-based party mix instead of assigning one fixed label.</p>
     </div>
     <div class="seo-faq-item">
-      <h2>How long does it take?</h2>
-      <p>The Daily Dose takes about 3 minutes. The full run includes 64 questions across 8 issue modules, including economy, healthcare, immigration, and climate.</p>
+      <h2>Is PYP biased?</h2>
+      <p>No. PYP is designed to avoid promoting a party. It shows a mix across five party alignments so users can see nuance instead of a single label.</p>
     </div>
     <div class="seo-faq-item">
       <h2>Do I need an account?</h2>
-      <p>No. You can start without an account. Sign-in is used to save results, sync progress, and unlock advanced PYP+ dashboard features.</p>
+      <p>No login is required to start. PYP asks for sign-in after the first 5-question Daily Dose so your results can be saved and revealed.</p>
     </div>
   </div>
 </section>
