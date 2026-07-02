@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SHELL_CACHE = `pyp-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `pyp-pages-${CACHE_VERSION}`;
 const STATIC_CACHE = `pyp-static-${CACHE_VERSION}`;
@@ -10,6 +10,12 @@ const APP_SHELL = [
   '/questions.html',
   '/app.html',
   '/share.html',
+  '/about',
+  '/about.html',
+  '/methodology',
+  '/methodology.html',
+  '/faq',
+  '/faq.html',
   '/offline.html',
   '/manifest.json',
   '/js/pyp-core.js',
